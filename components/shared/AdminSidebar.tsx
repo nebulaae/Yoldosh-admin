@@ -1,3 +1,5 @@
+"use client"
+
 import {
     Bell,
     Car,
@@ -19,42 +21,51 @@ import {
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Button } from "../ui/button"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
+import { useAdminLogout } from "@/hooks/adminHooks"
 
 // Menu items.
 const items = [
     {
         title: "Главное",
-        url: "#",
+        url: "/admin",
         icon: Home,
     },
     {
         title: "Заявки водителей",
-        url: "#",
+        url: "/admin/driver-applications",
         icon: Car,
     },
     {
         title: "Жалобы",
-        url: "#",
+        url: "/admin/reports",
         icon: Flag,
     },
     {
         title: "Поездки",
-        url: "#",
+        url: "/admin/trips",
         icon: Route,
     },
     {
         title: "Уведомления",
-        url: "#",
+        url: "/admin/notifications",
         icon: Bell,
     },
     {
         title: "Модели машин",
-        url: "#",
+        url: "/admin/car-models",
         icon: CarFront,
     }
 ]
 
 export const AdminSidebar = () => {
+    const { mutate: logout, isPending } = useAdminLogout();
+
+    const handleLogout = () => {
+        logout();
+    }
+
     return (
         <Sidebar>
             <SidebarContent>
@@ -63,23 +74,28 @@ export const AdminSidebar = () => {
                     <SidebarGroupContent className="h-full">
                         <SidebarMenu className="flex flex-col justify-between h-full py-4">
                             <div className="space-y-2">
-                                {items.map((item) => (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild>
-                                            <a href={item.url}>
-                                                <item.icon />
-                                                <span>{item.title}</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
+                                {items.map((item) => {
+                                    const pathname = usePathname();
+
+                                    return (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild className="hover:bg-blue-200 hover:text-blue-800 transition">
+                                                <Link href={item.url} className={`${pathname === item.url ? 'bg-blue-200/50 text-blue-800' : ''}`}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    )
+                                })}
+
                             </div>
                             <div>
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <Button className="bg-red-200/50 text-red-800 cursor-pointer">
+                                    <SidebarMenuButton asChild className="hover:bg-red-200 hover:text-red-800 transition">
+                                        <Button onClick={handleLogout} disabled={isPending} className="bg-red-200/50 text-red-800 cursor-pointer">
                                             <LogOut />
-                                            Завершить сессию
+                                            {isPending ? "Выходим..." : "Завершить сессию"}
                                         </Button>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>

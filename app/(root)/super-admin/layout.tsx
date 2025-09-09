@@ -1,3 +1,4 @@
+import { AuthGuard } from "@/components/shared/AuthGuard";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { SuperAdminSidebar } from "@/components/shared/SuperAdminSidebar";
 
@@ -7,11 +8,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <SidebarProvider>
-            <SuperAdminSidebar />
-            <section>
+        <AuthGuard requiredRole="SuperAdmin">
+            <SidebarProvider>
+                <SuperAdminSidebar />
                 {children}
-            </section>
-        </SidebarProvider>
+            </SidebarProvider>
+        </AuthGuard>
     );
 };

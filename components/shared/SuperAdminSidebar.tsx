@@ -1,5 +1,8 @@
-import { Home, LogOut, Logs, UserStar } from "lucide-react";
+"use client"
 
+import { Home, LogOut, Logs, UserStar } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import {
     Sidebar,
@@ -8,57 +11,58 @@ import {
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useAdminLogout } from "@/hooks/adminHooks";
 
-// Menu items.
 const items = [
     {
         title: "Главная",
-        url: "#",
+        url: "/super-admin",
         icon: Home,
     },
     {
         title: "Администраторы",
-        url: "#",
+        url: "/super-admin/admins",
         icon: UserStar,
     },
     {
         title: "Логи",
-        url: "#",
+        url: "/super-admin/logs",
         icon: Logs,
     },
 ]
 
 export const SuperAdminSidebar = () => {
+    const pathname = usePathname();
+    const { mutate: logout, isPending } = useAdminLogout();
+
     return (
-        <Sidebar>
+        <Sidebar className="bg-white border-r border-gray-200 shadow-sm fixed h-full">
             <SidebarContent>
                 <SidebarGroup className="h-full">
                     <SidebarGroupLabel>Yoldosh Super Admin</SidebarGroupLabel>
                     <SidebarGroupContent className="h-full">
                         <SidebarMenu className="flex flex-col justify-between h-full py-4">
-                            <div className="space-y-2">
-                                {items.map((item) => (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild>
-                                            <a href={item.url}>
-                                                <item.icon />
+                            <div className="space-y-1 px-2">
+                                {items.map((item) => {
+                                    const isActive = pathname.startsWith(item.url);
+                                    return (
+                                        <SidebarMenuItem key={item.title}>
+                                            <Link href={item.url} className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+                                                <item.icon className="h-5 w-5" />
                                                 <span>{item.title}</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
+                                            </Link>
+                                        </SidebarMenuItem>
+                                    )
+                                })}
                             </div>
-                            <div>
+                            <div className="px-2">
                                 <SidebarMenuItem>
-                                    <SidebarMenuButton asChild>
-                                        <Button className="bg-red-200/50 text-red-800 cursor-pointer">
-                                            <LogOut />
-                                            Завершить сессию
-                                        </Button>
-                                    </SidebarMenuButton>
+                                    <Button onClick={() => logout()} disabled={isPending} variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:bg-red-50 hover:text-red-600">
+                                        <LogOut className="h-5 w-5" />
+                                        {isPending ? "Выход..." : "Выйти"}
+                                    </Button>
                                 </SidebarMenuItem>
                             </div>
                         </SidebarMenu>
@@ -68,3 +72,4 @@ export const SuperAdminSidebar = () => {
         </Sidebar>
     )
 }
+

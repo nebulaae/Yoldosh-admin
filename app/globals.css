@@ -120,3 +120,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer utilities {
+ .transition {
+  @apply transition-all ease-initial duration-150;
+ }
+}

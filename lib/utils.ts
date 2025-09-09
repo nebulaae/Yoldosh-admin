@@ -146,6 +146,7 @@ export const queryKeys = {
   },
   superAdmin: {
     all: ['super-admin'] as const,
+    profile: () => [...queryKeys.superAdmin.all, 'profile'] as const,
     admins: () => [...queryKeys.superAdmin.all, 'admins'] as const,
     stats: () => [...queryKeys.superAdmin.all, 'stats'] as const,
     logs: (adminId: string) => [...queryKeys.superAdmin.all, 'logs', adminId] as const,
