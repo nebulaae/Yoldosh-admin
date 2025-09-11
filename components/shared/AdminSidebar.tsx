@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link";
+
 import {
     Bell,
     Car,
@@ -8,8 +10,7 @@ import {
     Home,
     LogOut,
     Route
-} from "lucide-react"
-
+} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -19,11 +20,11 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { Button } from "../ui/button"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-import { useAdminLogout } from "@/hooks/adminHooks"
+} from "@/components/ui/sidebar";
+import { Button } from "../ui/button";
+
+import { usePathname } from "next/navigation";
+import { useAdminLogout } from "@/hooks/adminHooks";
 
 // Menu items.
 const items = [
@@ -95,7 +96,7 @@ export const AdminSidebar = () => {
                                     <SidebarMenuButton asChild className="hover:bg-red-200 hover:text-red-800 transition">
                                         <Button onClick={handleLogout} disabled={isPending} className="bg-red-200/50 text-red-800 cursor-pointer">
                                             <LogOut />
-                                            {isPending ? "Выходим..." : "Завершить сессию"}
+                                            {isPending ? "Завершаем сессию..." : "Завершить сессию"}
                                         </Button>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>

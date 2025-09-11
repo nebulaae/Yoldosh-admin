@@ -116,14 +116,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-
 @layer utilities {
- .transition {
-  @apply transition-all ease-initial duration-150;
- }
+  .transition {
+    @apply transition-all ease-initial duration-150;
+  }
+
+  .title-text {
+    @apply text-lg sm:text-xl lg:text-2xl font-bold;
+  }
 }

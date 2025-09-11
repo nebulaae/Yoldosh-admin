@@ -1,6 +1,10 @@
+import { Trips } from "@/components/pages/admin/Trips";
+
 const Page = () => {
   return (
-    <div>Page</div>
+    <section className='w-full p-8'>
+      <Trips />
+    </section>
   )
 }
 

@@ -10,16 +10,16 @@ export function cn(...inputs: ClassValue[]) {
 export const loginSchema = z.object({
   email: z
     .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email")
+    .min(1, "Почта необходима")
+    .email("Введите правильную почту")
     .refine(
       (email) => email.endsWith("@yoldosh.uz"),
-      "Only corporate emails are allowed (@yoldosh.uz)"
+      "Разрешены только корпоративные почты (@yoldosh.uz)"
     ),
   password: z
     .string()
-    .min(1, "Password is required")
-    .min(6, "Password must be at least 6 characters"),
+    .min(1, "Пароль необходим")
+    .min(6, "Пароль должен быть хотя бы из 6 символов"),
 });
 
 // Application Status Update Schema
@@ -31,7 +31,7 @@ export const updateApplicationStatusSchema = z.object({
 // Report Status Update Schema
 export const updateReportStatusSchema = z.object({
   reportId: z.string().min(1, "Report ID is required"),
-  status: z.enum(["PENDING", "VERIFIED", "REJECTED"], "Status is required"),
+  status: z.enum(["PENDING", "RESOLVED", "REJECTED"], "Status is required"),
 });
 
 // Ban User Schema
@@ -51,12 +51,23 @@ export const banUserSchema = z.object({
 
 // Global Notification Schema
 export const globalNotificationSchema = z.object({
+  title: z
+    .string()
+    .min(5, "Title must be at least 5 characters")
+    .max(100, "Title must not exceed 100 characters"),
   content: z
     .string()
-    .min(1, "Content is required")
+    .min(10, "Content must be at least 10 characters")
     .max(1000, "Content must not exceed 1000 characters"),
-  type: z.enum(["PENDING", "VERIFIED", "REJECTED"], "Type is required"),
+  type: z.enum(["INFO", "WARNING", "SUCCESS"], "Type is required"),
 });
+
+
+// Car Model Schema
+export const carModelSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name must not exceed 100 characters"),
+});
+
 
 // Trip Edit Schema
 export const editTripSchema = z.object({
@@ -101,7 +112,7 @@ export const formatErrorMessage = (error: any): string => {
 
 // Utility function to format dates
 export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-US", {
+  return new Date(dateString).toLocaleDateString("ru-RU", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -113,13 +124,19 @@ export const formatDate = (dateString: string): string => {
 // Status color utilities
 export const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
+    // Application/Report Status
     PENDING: "bg-yellow-100 text-yellow-800",
     VERIFIED: "bg-green-100 text-green-800",
     REJECTED: "bg-red-100 text-red-800",
     RESOLVED: "bg-blue-100 text-blue-800",
+    // Trip Status
     CONFIRMED: "bg-green-100 text-green-800",
     CANCELLED: "bg-red-100 text-red-800",
     COMPLETED: "bg-gray-100 text-gray-800",
+    // Notification Types
+    INFO: "bg-blue-100 text-blue-800",
+    WARNING: "bg-yellow-100 text-yellow-800",
+    SUCCESS: "bg-green-100 text-green-800",
   };
   return statusColors[status] || "bg-gray-100 text-gray-800";
 };

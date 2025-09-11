@@ -1,14 +1,17 @@
 "use client";
 
 import { z } from "zod";
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Toaster } from 'sonner';
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { loginSchema } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useAdminLogin } from "@/hooks/adminHooks";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     Form,
     FormControl,
@@ -17,9 +20,6 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { loginSchema } from "@/lib/utils";
-import { Separator } from "../ui/separator";
-import { useAdminLogin } from "@/hooks/adminHooks";
 
 export const Login = () => {
     const router = useRouter();

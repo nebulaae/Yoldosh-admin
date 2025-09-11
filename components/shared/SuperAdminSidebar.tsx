@@ -1,9 +1,15 @@
 "use client"
 
-import { Home, LogOut, Logs, UserStar } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+
+import {
+    Home,
+    LogOut,
+    Logs,
+    UserStar
+} from "lucide-react";
 import { Button } from "../ui/button";
+import { usePathname } from "next/navigation";
 import {
     Sidebar,
     SidebarContent,
@@ -11,8 +17,10 @@ import {
     SidebarGroupContent,
     SidebarGroupLabel,
     SidebarMenu,
+    SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
 import { useAdminLogout } from "@/hooks/adminHooks";
 
 const items = [
@@ -44,25 +52,34 @@ export const SuperAdminSidebar = () => {
                     <SidebarGroupLabel>Yoldosh Super Admin</SidebarGroupLabel>
                     <SidebarGroupContent className="h-full">
                         <SidebarMenu className="flex flex-col justify-between h-full py-4">
-                            <div className="space-y-1 px-2">
+                            <div className="space-y-2">
                                 {items.map((item) => {
-                                    const isActive = pathname.startsWith(item.url);
+                                    const pathname = usePathname();
+
                                     return (
                                         <SidebarMenuItem key={item.title}>
-                                            <Link href={item.url} className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}`}>
-                                                <item.icon className="h-5 w-5" />
-                                                <span>{item.title}</span>
-                                            </Link>
+                                            <SidebarMenuButton asChild className="hover:bg-blue-200 hover:text-blue-800 transition">
+                                                <Link href={item.url} className={`${pathname === item.url ? 'bg-blue-200/50 text-blue-800' : ''}`}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            </SidebarMenuButton>
                                         </SidebarMenuItem>
                                     )
                                 })}
                             </div>
                             <div className="px-2">
                                 <SidebarMenuItem>
-                                    <Button onClick={() => logout()} disabled={isPending} variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:bg-red-50 hover:text-red-600">
-                                        <LogOut className="h-5 w-5" />
-                                        {isPending ? "Выход..." : "Выйти"}
-                                    </Button>
+                                    <SidebarMenuButton asChild className="hover:bg-red-200 hover:text-red-800 transition">
+                                        <Button
+                                            onClick={() => logout()}
+                                            disabled={isPending}
+                                            className="bg-red-200/50 text-red-800 cursor-pointer"
+                                        >
+                                            <LogOut className="h-5 w-5" />
+                                            {isPending ? "Завершаем сессию..." : "Завершить сессию"}
+                                        </Button>
+                                    </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </div>
                         </SidebarMenu>

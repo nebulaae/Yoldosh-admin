@@ -1,6 +1,10 @@
+import { Notifications } from "@/components/pages/admin/Notifications";
+
 const Page = () => {
   return (
-    <div>Page</div>
+    <section className="w-full p-8">
+      <Notifications />
+    </section>
   )
 }
 

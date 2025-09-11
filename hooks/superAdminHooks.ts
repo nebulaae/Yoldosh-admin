@@ -1,9 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+
 import { z } from "zod";
 import { toast } from "sonner";
-
-import api from "@/lib/api";
-import { createAdminSchema, queryKeys } from "@/lib/utils";
+import {
+    createAdminSchema,
+    queryKeys
+} from "@/lib/utils";
+import {
+    useMutation,
+    useQuery,
+    useQueryClient
+} from "@tanstack/react-query";
 
 export const useGetSuperAdminProfile = (enabled: boolean = true) => {
     return useQuery({

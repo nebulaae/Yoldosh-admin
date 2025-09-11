@@ -1,10 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+
 import { z } from "zod";
 import { toast } from "sonner";
-
-import api from "@/lib/api";
+import {
+    useMutation,
+    useQuery,
+    useQueryClient
+} from "@tanstack/react-query";
 import {
     banUserSchema,
+    carModelSchema,
     editTripSchema,
     globalNotificationSchema,
     loginSchema,
@@ -70,7 +75,7 @@ export const useUpdateApplicationStatus = () => {
         ) => {
             const { data } = await api.patch(
                 `/admin/driver-applications/${values.userId}/status`,
-                { status: values.status, adminId: "temp-admin-id" } // Pass adminId if needed
+                { status: values.status }
             );
             return data;
         },
@@ -165,15 +170,23 @@ export const useDeleteTrip = () => {
 }
 
 // Notifications
+export const useGetNotifications = () => {
+    return useQuery({
+        queryKey: queryKeys.admin.notifications(),
+        queryFn: async () => {
+            const { data } = await api.get("/admin/notifications/global");
+            return data.data;
+        }
+    })
+}
+
 export const useCreateGlobalNotification = () => {
-    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (values: z.infer<typeof globalNotificationSchema>) => {
             await api.post("/admin/notifications/global", values);
         },
         onSuccess: () => {
             toast.success("Глобальное уведомление отправлено");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.notifications() });
         },
     });
 };
@@ -183,8 +196,8 @@ export const useGetCarModels = () => {
     return useQuery({
         queryKey: queryKeys.admin.carModels(),
         queryFn: async () => {
-            const { data } = await api.get("/car-models");
-            return data;
+            const { data } = await api.get("/car/models");
+            return data.data;
         },
     });
 };
@@ -192,8 +205,8 @@ export const useGetCarModels = () => {
 export const useCreateCarModel = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (name: string) => {
-            await api.post("/admin/car-models", { name });
+        mutationFn: async (values: z.infer<typeof carModelSchema>) => {
+            await api.post("/admin/car-models", values);
         },
         onSuccess: () => {
             toast.success("Модель машины успешно создана");
@@ -202,3 +215,15 @@ export const useCreateCarModel = () => {
     });
 };
 
+export const useDeleteCarModel = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id: string) => {
+            await api.delete(`/admin/car-models/${id}`);
+        },
+        onSuccess: () => {
+            toast.success("Модель машины успешно удалена");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels() });
+        }
+    });
+}

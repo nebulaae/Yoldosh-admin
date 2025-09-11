@@ -1,6 +1,10 @@
+import { Logs } from "@/components/pages/super-admin/Logs";
+
 const Page = () => {
   return (
-    <div>Page</div>
+    <section className="w-full p-8">
+      <Logs />
+    </section>
   )
 }
 

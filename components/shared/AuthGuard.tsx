@@ -1,10 +1,10 @@
 "use client";
 
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGetAdminProfile } from "@/hooks/adminHooks";
 import { useGetSuperAdminProfile } from "@/hooks/superAdminHooks";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 
 type Role = "Admin" | "SuperAdmin";
 

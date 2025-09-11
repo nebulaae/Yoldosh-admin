@@ -1,6 +1,10 @@
+import { CarModels } from "@/components/pages/admin/CarModels";
+
 const Page = () => {
   return (
-    <div>Page</div>
+    <section className="w-full p-8">
+      <CarModels />
+    </section>
   )
 }
 
