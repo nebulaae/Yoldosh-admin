@@ -1,11 +1,11 @@
 import api from "@/lib/api";
-
 import { z } from "zod";
 import { toast } from "sonner";
 import {
     useMutation,
-    useQuery,
-    useQueryClient
+    useQueryClient,
+    useInfiniteQuery,
+    useQuery
 } from "@tanstack/react-query";
 import {
     banUserSchema,
@@ -56,14 +56,21 @@ export const useGetAdminProfile = (enabled: boolean = true) => {
         enabled,
     });
 };
+
 // Driver Applications
-export const useGetDriverApplications = () => {
-    return useQuery({
-        queryKey: queryKeys.admin.driverApplications(),
-        queryFn: async () => {
-            const { data } = await api.get("/admin/driver-applications");
+export const useGetDriverApplications = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.driverApplications(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/driver-applications", {
+                params: { ...filters, page: pageParam }
+            });
             return data.data;
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
     });
 };
 
@@ -82,22 +89,27 @@ export const useUpdateApplicationStatus = () => {
         onSuccess: () => {
             toast.success("Статус заявки успешно обновлен");
             queryClient.invalidateQueries({
-                queryKey: queryKeys.admin.driverApplications(),
+                queryKey: queryKeys.admin.driverApplications({}),
             });
         },
     });
 };
 
 // Reports
-export const useGetReports = (params: { status: string; page?: number, limit?: number }) => {
-    return useQuery({
-        queryKey: queryKeys.admin.reports(params),
-        queryFn: async () => {
-            const { data } = await api.get("/admin/reports", { params });
+export const useGetReports = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.reports(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/reports", { params: { ...filters, page: pageParam } });
             return data.data;
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
     });
 };
+
 
 export const useUpdateReportStatus = () => {
     const queryClient = useQueryClient();
@@ -109,9 +121,7 @@ export const useUpdateReportStatus = () => {
         },
         onSuccess: () => {
             toast.success("Статус жалобы успешно обновлен");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.reports({ status: 'PENDING' }) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.reports({ status: 'RESOLVED' }) });
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.reports({ status: 'REJECTED' }) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.reports({}) });
         },
     });
 };
@@ -127,19 +137,23 @@ export const useBanUser = () => {
         },
         onSuccess: () => {
             toast.success("Пользователь успешно забанен");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.reports({}) });
         },
     });
 };
 
 // Trips
-export const useGetTrips = () => {
-    return useQuery({
-        queryKey: queryKeys.admin.trips(),
-        queryFn: async () => {
-            const { data } = await api.get("/trips"); // General trips endpoint
-            return data;
+export const useGetTrips = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.trips(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/trips", { params: { ...filters, page: pageParam } });
+            return data.data;
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
     });
 };
 
@@ -151,7 +165,7 @@ export const useEditTrip = () => {
         },
         onSuccess: () => {
             toast.success("Поездка успешно обновлена");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.trips() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.trips({}) });
         },
     });
 };
@@ -164,41 +178,51 @@ export const useDeleteTrip = () => {
         },
         onSuccess: () => {
             toast.success("Поездка успешно удалена");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.trips() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.trips({}) });
         }
     });
 }
 
 // Notifications
-export const useGetNotifications = () => {
-    return useQuery({
-        queryKey: queryKeys.admin.notifications(),
-        queryFn: async () => {
-            const { data } = await api.get("/admin/notifications/global");
+export const useGetNotifications = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.notifications(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/notifications/global", { params: { ...filters, page: pageParam } });
             return data.data;
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
         }
     })
 }
 
 export const useCreateGlobalNotification = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (values: z.infer<typeof globalNotificationSchema>) => {
             await api.post("/admin/notifications/global", values);
         },
         onSuccess: () => {
             toast.success("Глобальное уведомление отправлено");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.notifications({}) });
         },
     });
 };
 
 // Car Models
-export const useGetCarModels = () => {
-    return useQuery({
-        queryKey: queryKeys.admin.carModels(),
-        queryFn: async () => {
-            const { data } = await api.get("/car/models");
+export const useGetCarModels = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.carModels(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/car-models", { params: { ...filters, page: pageParam } });
             return data.data;
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
     });
 };
 
@@ -210,11 +234,10 @@ export const useCreateCarModel = () => {
         },
         onSuccess: () => {
             toast.success("Модель машины успешно создана");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels({}) });
         },
     });
 };
-
 export const useDeleteCarModel = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -223,7 +246,7 @@ export const useDeleteCarModel = () => {
         },
         onSuccess: () => {
             toast.success("Модель машины успешно удалена");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels({}) });
         }
     });
 }

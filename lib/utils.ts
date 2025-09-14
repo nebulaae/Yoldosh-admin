@@ -25,13 +25,13 @@ export const loginSchema = z.object({
 // Application Status Update Schema
 export const updateApplicationStatusSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  status: z.enum(["PENDING", "VERIFIED", "REJECTED"], "Status is required"),
+  status: z.enum(["VERIFIED", "REJECTED"], "Status is required"),
 });
 
 // Report Status Update Schema
 export const updateReportStatusSchema = z.object({
   reportId: z.string().min(1, "Report ID is required"),
-  status: z.enum(["PENDING", "RESOLVED", "REJECTED"], "Status is required"),
+  status: z.enum(["RESOLVED", "REJECTED"], "Status is required"),
 });
 
 // Ban User Schema
@@ -39,41 +39,38 @@ export const banUserSchema = z.object({
   reportId: z.string().min(1, "Report ID is required"),
   reason: z
     .string()
-    .min(10, "Reason must be at least 10 characters")
-    .max(500, "Reason must not exceed 500 characters"),
+    .min(10, "Причина бана должна быть не менее 10 символов")
+    .max(500, "Причина бана не должна превышать 500 символов"),
   durationInDays: z
     .number()
     .int()
-    .positive("Duration must be positive")
+    .positive("Срок должен быть положительным числом")
     .optional()
     .nullable(),
 });
 
 // Global Notification Schema
 export const globalNotificationSchema = z.object({
-  title: z
-    .string()
-    .min(5, "Title must be at least 5 characters")
-    .max(100, "Title must not exceed 100 characters"),
   content: z
     .string()
-    .min(10, "Content must be at least 10 characters")
-    .max(1000, "Content must not exceed 1000 characters"),
-  type: z.enum(["INFO", "WARNING", "SUCCESS"], "Type is required"),
+    .min(10, "Сообщение должно быть не менее 10 символов.")
+    .max(1000, "Сообщение не должно превышать 1000 символов."),
+  type: z.enum(["TRIPS", "NEWS_AND_AGREEMENT", "PROMOTION_AND_DISCOUNTS", "MESSAGES", "GENERAL"]),
 });
 
 
-// Car Model Schema
+// Car Model Schema - CORRECTED
 export const carModelSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100, "Name must not exceed 100 characters"),
+  make: z.string().min(1, "Производитель обязателен").max(50),
+  model: z.string().min(1, "Модель обязательна").max(50),
+  seats_std: z.number().min(1, "Минимум 1 место").max(20, "Максимум 20 мест"),
 });
-
 
 // Trip Edit Schema
 export const editTripSchema = z.object({
   tripId: z.string().min(1, "Trip ID is required"),
-  departure_ts: z.string().datetime().optional(),
-  seats_available: z.number().int().positive().max(8).optional(),
+  departure_ts: z.string().optional(),
+  seats_available: z.number().int().min(0).max(8).optional(),
   price_per_person: z.number().positive().optional(),
   max_two_back: z.boolean().optional(),
   comment: z.string().max(500).optional(),
@@ -109,9 +106,9 @@ export const formatErrorMessage = (error: any): string => {
   }
   return "An unexpected error occurred";
 };
-
 // Utility function to format dates
 export const formatDate = (dateString: string): string => {
+  if (!dateString) return "N/A";
   return new Date(dateString).toLocaleDateString("ru-RU", {
     year: "numeric",
     month: "short",
@@ -124,19 +121,19 @@ export const formatDate = (dateString: string): string => {
 // Status color utilities
 export const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
-    // Application/Report Status
     PENDING: "bg-yellow-100 text-yellow-800",
     VERIFIED: "bg-green-100 text-green-800",
     REJECTED: "bg-red-100 text-red-800",
     RESOLVED: "bg-blue-100 text-blue-800",
-    // Trip Status
     CONFIRMED: "bg-green-100 text-green-800",
     CANCELLED: "bg-red-100 text-red-800",
     COMPLETED: "bg-gray-100 text-gray-800",
-    // Notification Types
-    INFO: "bg-blue-100 text-blue-800",
-    WARNING: "bg-yellow-100 text-yellow-800",
-    SUCCESS: "bg-green-100 text-green-800",
+    // Notification Types from enum
+    TRIPS: "bg-sky-100 text-sky-800",
+    NEWS_AND_AGREEMENT: "bg-indigo-100 text-indigo-800",
+    PROMOTION_AND_DISCOUNTS: "bg-purple-100 text-purple-800",
+    MESSAGES: "bg-pink-100 text-pink-800",
+    GENERAL: "bg-gray-100 text-gray-800",
   };
   return statusColors[status] || "bg-gray-100 text-gray-800";
 };
@@ -147,7 +144,6 @@ export const hasPermission = (userRole: string, requiredRole: string): boolean =
     Admin: 1,
     SuperAdmin: 2,
   };
-
   return (roleHierarchy[userRole] || 0) >= (roleHierarchy[requiredRole] || 0);
 };
 
@@ -155,17 +151,17 @@ export const queryKeys = {
   admin: {
     all: ['admin'] as const,
     profile: () => [...queryKeys.admin.all, 'profile'] as const,
-    driverApplications: () => [...queryKeys.admin.all, 'driver-applications'] as const,
-    reports: (params: Record<string, any>) => [...queryKeys.admin.all, 'reports', params] as const,
-    trips: () => [...queryKeys.admin.all, 'trips'] as const,
-    notifications: () => [...queryKeys.admin.all, 'notifications'] as const,
-    carModels: () => [...queryKeys.admin.all, 'car-models'] as const,
+    driverApplications: (filters: any) => [...queryKeys.admin.all, 'driver-applications', filters] as const,
+    reports: (filters: any) => [...queryKeys.admin.all, 'reports', filters] as const,
+    trips: (filters: any = {}) => [...queryKeys.admin.all, 'trips', filters] as const,
+    notifications: (filters: any = {}) => [...queryKeys.admin.all, 'notifications', filters] as const,
+    carModels: (filters: any = {}) => [...queryKeys.admin.all, 'car-models', filters] as const,
   },
   superAdmin: {
     all: ['super-admin'] as const,
     profile: () => [...queryKeys.superAdmin.all, 'profile'] as const,
-    admins: () => [...queryKeys.superAdmin.all, 'admins'] as const,
+    admins: (filters: any) => [...queryKeys.superAdmin.all, 'admins', filters] as const,
     stats: () => [...queryKeys.superAdmin.all, 'stats'] as const,
-    logs: (adminId: string) => [...queryKeys.superAdmin.all, 'logs', adminId] as const,
+    logs: (adminId: string, filters: any) => [...queryKeys.superAdmin.all, 'logs', adminId, filters] as const,
   },
 } as const;

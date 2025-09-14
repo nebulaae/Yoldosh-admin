@@ -80,8 +80,8 @@ export const AdminSidebar = () => {
 
                                     return (
                                         <SidebarMenuItem key={item.title}>
-                                            <SidebarMenuButton asChild className="hover:bg-blue-200 hover:text-blue-800 transition">
-                                                <Link href={item.url} className={`${pathname === item.url ? 'bg-blue-200/50 text-blue-800' : ''}`}>
+                                            <SidebarMenuButton asChild>
+                                                <Link href={item.url} className={`${pathname === item.url ? 'bg-neutral-200' : ''}`}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
                                                 </Link>

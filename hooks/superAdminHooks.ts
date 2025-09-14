@@ -1,5 +1,4 @@
 import api from "@/lib/api";
-
 import { z } from "zod";
 import { toast } from "sonner";
 import {
@@ -9,7 +8,8 @@ import {
 import {
     useMutation,
     useQuery,
-    useQueryClient
+    useQueryClient,
+    useInfiniteQuery
 } from "@tanstack/react-query";
 
 export const useGetSuperAdminProfile = (enabled: boolean = true) => {
@@ -25,13 +25,17 @@ export const useGetSuperAdminProfile = (enabled: boolean = true) => {
 };
 
 // Admins
-export const useGetAllAdmins = () => {
-    return useQuery({
-        queryKey: queryKeys.superAdmin.admins(),
-        queryFn: async () => {
-            const { data } = await api.get("/super-admin/admins");
-            return data.data;
+export const useGetAllAdmins = (filters: any) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.superAdmin.admins(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/super-admin/admins", {
+                params: { ...filters, page: pageParam, limit: 10 }
+            });
+            return data; 
         },
+        getNextPageParam: (lastPage: any) => lastPage.nextPage ?? undefined,
+        initialPageParam: 1,
     });
 };
 
@@ -44,7 +48,7 @@ export const useCreateAdmin = () => {
         },
         onSuccess: () => {
             toast.success("Администратор успешно создан");
-            queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.admins() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.admins({}) });
         },
     });
 };
@@ -57,7 +61,7 @@ export const useDeleteAdmin = () => {
         },
         onSuccess: () => {
             toast.success("Администратор успешно удален");
-            queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.admins() });
+            queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.admins({}) });
         },
     });
 };
@@ -74,14 +78,18 @@ export const useGetAdminStats = () => {
 };
 
 // Logs
-export const useGetAdminLogs = (adminId: string) => {
-    return useQuery({
-        queryKey: queryKeys.superAdmin.logs(adminId),
-        queryFn: async () => {
-            const { data } = await api.get(`/super-admin/admins/${adminId}/logs`);
-            return data.data;
+export const useGetAdminLogs = (adminId: string, filters: any) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.superAdmin.logs(adminId, filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get(`/super-admin/admins/${adminId}/logs`, {
+                params: { ...filters, page: pageParam, limit: 20 }
+            });
+            return data;
         },
-        enabled: !!adminId, // Only run query if adminId is provided
+        getNextPageParam: (lastPage: any) => lastPage.nextPage ?? undefined,
+        initialPageParam: 1,
+        enabled: !!adminId, 
     });
 };
 
