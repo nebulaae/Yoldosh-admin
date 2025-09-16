@@ -85,7 +85,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
     const [sort, setSort] = useState({ sortBy: "createdAt", sortOrder: "DESC" });
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
-    const debouncedSearch = useDebounceValue(searchTerm, 500);
+    const [debouncedSearch] = useDebounceValue(searchTerm, 500);
 
     const filters = {
         status,
@@ -118,6 +118,9 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
             onSuccess: () => setSelectedReport(null),
         });
     };
+
+    const allReports = data?.pages.flatMap(page => page.reports) ?? [];
+
 
     return (
         <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedReport(null)}>
@@ -190,7 +193,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                                     <TableCell colSpan={6}><Skeleton className="h-8 w-full" /></TableCell>
                                 </TableRow>
                             ))
-                        ) : data!.pages.flatMap(page => page.reports).length > 0 ? (
+                        ) : allReports.length > 0 ? (
                             data!.pages.map((page, i) => (
                                 <React.Fragment key={i}>
                                     {page.reports.map((report: Report) => (
@@ -200,7 +203,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                                             <TableCell className="truncate max-w-xs">{report.reason}</TableCell>
                                             <TableCell>{formatDate(report.createdAt)}</TableCell>
                                             <TableCell>
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                                                <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
                                                     {report.status}
                                                 </span>
                                             </TableCell>
@@ -278,7 +281,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
 export const Reports = () => {
     return (
         <div>
-            <Toaster richColors />
+            <Toaster />
             <div><h1 className="title-text">Жалобы</h1></div>
             <Tabs defaultValue="PENDING" className="w-full mt-4">
                 <TabsList className="w-64 px-1">

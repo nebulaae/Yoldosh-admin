@@ -29,14 +29,17 @@ import {
     Calendar as CalendarIcon,
 } from "lucide-react";
 import {
-    RadioGroup,
-    RadioGroupItem
-} from "@/components/ui/radio-group";
-import {
     Popover,
     PopoverContent,
     PopoverTrigger
 } from "@/components/ui/popover";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -59,6 +62,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+
 
 export const Notifications = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -105,15 +109,22 @@ export const Notifications = () => {
                                 </FormItem>
                             )} />
                             <FormField control={form.control} name="type" render={({ field }) => (
-                                <FormItem className="space-y-3">
+                                <FormItem>
                                     <FormLabel>Тип уведомления</FormLabel>
-                                    <FormControl>
-                                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-1">
-                                            <FormItem className="flex items-center space-x-3"><FormControl><RadioGroupItem value="GENERAL" /></FormControl><FormLabel className="font-normal">General</FormLabel></FormItem>
-                                            <FormItem className="flex items-center space-x-3"><FormControl><RadioGroupItem value="TRIPS" /></FormControl><FormLabel className="font-normal">Trips</FormLabel></FormItem>
-                                            <FormItem className="flex items-center space-x-3"><FormControl><RadioGroupItem value="PROMOTION_AND_DISCOUNTS" /></FormControl><FormLabel className="font-normal">Promotions</FormLabel></FormItem>
-                                        </RadioGroup>
-                                    </FormControl>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Выберите тип" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="general">General</SelectItem>
+                                            <SelectItem value="trips">Trips</SelectItem>
+                                            <SelectItem value="promotionAndDiscounts">Promotions</SelectItem>
+                                            <SelectItem value="newsAndAgreement">News</SelectItem>
+                                            <SelectItem value="messages">Messages</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )} />

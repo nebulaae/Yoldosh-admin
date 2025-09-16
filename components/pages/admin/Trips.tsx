@@ -55,6 +55,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 
 type Trip = {
     id: string;
@@ -70,7 +71,8 @@ export const Trips = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [sort, setSort] = useState({ sortBy: "departure_ts", sortOrder: "DESC" });
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
-    const debouncedSearch = useDebounceValue(searchTerm, 500);
+
+    const [debouncedSearch] = useDebounceValue(searchTerm, 500);
 
     const filters = {
         search: debouncedSearch,
@@ -160,16 +162,36 @@ export const Trips = () => {
                                 <div key={trip.id} className="bg-white p-4 rounded-lg border flex flex-col justify-between">
                                     <div>
                                         <div className="font-bold text-lg">{trip.fromVillage?.nameRu} → {trip.toVillage?.nameRu}</div>
+                                        <Separator orientation="horizontal" className="my-2" />
                                         <div className="text-sm text-gray-500">Водитель: {trip.driver.firstName}</div>
                                         <div className="text-sm text-gray-500">Отправление: {formatDate(trip.departure_ts)}</div>
                                         <div className="text-sm text-gray-500">Места: {trip.seats_available}</div>
                                         <div className="text-sm text-gray-500">Цена: {trip.price_per_person} UZS</div>
                                     </div>
-                                    <div className="flex justify-end space-x-2 mt-4">
+                                    <div className="flex items-center justify-between space-x-2 mt-4">
                                         <DialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" onClick={() => handleEditClick(trip)}><Pencil className="h-4 w-4" /></Button>
+                                            <div className="w-full">
+                                                <Button
+                                                    size="icon"
+                                                    onClick={() => handleEditClick(trip)}
+                                                    className="w-full"
+                                                >
+                                                    Редактировать
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </DialogTrigger>
-                                        <Button variant="ghost" size="icon" onClick={() => handleDelete(trip.id)} disabled={isDeleting}><Trash2 className="h-4 w-4 text-red-500" /></Button>
+                                        <div className="w-full">
+                                            <Button
+                                                size="icon"
+                                                onClick={() => handleDelete(trip.id)}
+                                                disabled={isDeleting}
+                                                className="btn-danger w-full"
+                                            >
+                                                Удалить
+                                                <Trash2 className="size-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))

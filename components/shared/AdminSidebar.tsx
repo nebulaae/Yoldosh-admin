@@ -9,7 +9,8 @@ import {
     Flag,
     Home,
     LogOut,
-    Route
+    Route,
+    ShieldAlert
 } from "lucide-react";
 import {
     Sidebar,
@@ -57,6 +58,11 @@ const items = [
         title: "Модели машин",
         url: "/admin/car-models",
         icon: CarFront,
+    },
+    {
+        title: "Модерация",
+        url: "/admin/moderation",
+        icon: ShieldAlert,
     }
 ]
 

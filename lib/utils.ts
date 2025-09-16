@@ -55,7 +55,7 @@ export const globalNotificationSchema = z.object({
     .string()
     .min(10, "Сообщение должно быть не менее 10 символов.")
     .max(1000, "Сообщение не должно превышать 1000 символов."),
-  type: z.enum(["TRIPS", "NEWS_AND_AGREEMENT", "PROMOTION_AND_DISCOUNTS", "MESSAGES", "GENERAL"]),
+  type: z.enum(["trips", "newsAndAgreement", "promotionAndDiscounts", "messages", "general"]),
 });
 
 
@@ -156,6 +156,7 @@ export const queryKeys = {
     trips: (filters: any = {}) => [...queryKeys.admin.all, 'trips', filters] as const,
     notifications: (filters: any = {}) => [...queryKeys.admin.all, 'notifications', filters] as const,
     carModels: (filters: any = {}) => [...queryKeys.admin.all, 'car-models', filters] as const,
+    restrictedWords: (filters: any = {}) => [...queryKeys.admin.all, 'restricted-words', filters] as const,
   },
   superAdmin: {
     all: ['super-admin'] as const,

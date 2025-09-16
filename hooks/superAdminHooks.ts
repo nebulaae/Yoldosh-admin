@@ -32,9 +32,12 @@ export const useGetAllAdmins = (filters: any) => {
             const { data } = await api.get("/super-admin/admins", {
                 params: { ...filters, page: pageParam, limit: 10 }
             });
-            return data; 
+            return data.data; // FIX: Return the nested data object
         },
-        getNextPageParam: (lastPage: any) => lastPage.nextPage ?? undefined,
+        // FIX: Correctly calculate the next page based on backend response
+        getNextPageParam: (lastPage: any) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        },
         initialPageParam: 1,
     });
 };
@@ -85,11 +88,13 @@ export const useGetAdminLogs = (adminId: string, filters: any) => {
             const { data } = await api.get(`/super-admin/admins/${adminId}/logs`, {
                 params: { ...filters, page: pageParam, limit: 20 }
             });
-            return data;
+            return data.data; // FIX: Return the nested data object
         },
-        getNextPageParam: (lastPage: any) => lastPage.nextPage ?? undefined,
+        // FIX: Correctly calculate the next page
+        getNextPageParam: (lastPage: any) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        },
         initialPageParam: 1,
-        enabled: !!adminId, 
+        enabled: !!adminId,
     });
 };
-

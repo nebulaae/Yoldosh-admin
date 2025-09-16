@@ -250,3 +250,46 @@ export const useDeleteCarModel = () => {
         }
     });
 }
+
+// Word Moderation
+export const useGetRestrictedWords = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.restrictedWords(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/moderation/words", {
+                params: { ...filters, page: pageParam }
+            });
+            return data.data;
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
+    });
+};
+
+export const useCreateRestrictedWord = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (values: { word: string }) => {
+            await api.post("/admin/moderation/words", values);
+        },
+        onSuccess: () => {
+            toast.success("Слово успешно добавлено в список.");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.restrictedWords({}) });
+        },
+    });
+};
+
+export const useDeleteRestrictedWord = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (wordId: number) => {
+            await api.delete(`/admin/moderation/words/${wordId}`);
+        },
+        onSuccess: () => {
+            toast.success("Слово успешно удалено.");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.restrictedWords({}) });
+        }
+    });
+}

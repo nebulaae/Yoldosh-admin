@@ -130,4 +130,8 @@
   .title-text {
     @apply text-lg sm:text-xl lg:text-2xl font-bold;
   }
+
+  .btn-danger {
+    @apply !bg-red-200/50 !text-red-800 hover:!bg-red-200;
+  }
 }
