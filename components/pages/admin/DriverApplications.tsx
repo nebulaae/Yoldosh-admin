@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { getStatusColor } from "@/lib/utils";
-import { useDebounceValue } from "usehooks-ts";
+import {
+    useDebounceValue,
+    useIntersectionObserver
+} from "usehooks-ts";
 import {
     useGetDriverApplications,
     useUpdateApplicationStatus
@@ -39,15 +42,23 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsContent
+} from "@/components/ui/tabs";
 
-export const DriverApplications = () => {
+type ApplicationStatus = "PENDING" | "VERIFIED" | "REJECTED";
+
+const ApplicationsTable = ({ status }: { status: ApplicationStatus }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [sort, setSort] = useState({ sortBy: "createdAt", sortOrder: "DESC" });
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
-
-    const debouncedSearch = useDebounceValue(searchTerm, 500);
+    const [debouncedSearch] = useDebounceValue(searchTerm, 500);
 
     const filters = {
+        status,
         search: debouncedSearch,
         sortBy: sort.sortBy,
         sortOrder: sort.sortOrder,
@@ -58,6 +69,14 @@ export const DriverApplications = () => {
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetDriverApplications(filters);
     const { mutate: updateStatus, isPending } = useUpdateApplicationStatus();
 
+    const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.5 });
+
+    useEffect(() => {
+        if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
     const handleStatusUpdate = (userId: string, status: "VERIFIED" | "REJECTED") => {
         updateStatus({ userId, status });
     };
@@ -66,9 +85,6 @@ export const DriverApplications = () => {
 
     return (
         <div>
-            <Toaster richColors />
-            <h1 className="title-text mb-6">Заявки водителей</h1>
-
             <div className="flex flex-col sm:flex-row w-full justify-between items-center gap-2 my-4">
                 <div className="relative w-full max-w-sm">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -138,16 +154,35 @@ export const DriverApplications = () => {
                         ) : (
                             <TableRow><TableCell colSpan={5} className="text-center h-24">Нет активных заявок.</TableCell></TableRow>
                         )}
+                        {hasNextPage && (
+                            <TableRow>
+                                <TableCell colSpan={5} ref={ref}>
+                                    {isFetchingNextPage && <div className='flex justify-center p-4'><p>Загрузка...</p></div>}
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>
-            {hasNextPage && (
-                <div className="mt-4 flex justify-center">
-                    <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                        {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
-                    </Button>
-                </div>
-            )}
+        </div>
+    );
+};
+
+export const DriverApplications = () => {
+    return (
+        <div>
+            <Toaster />
+            <h1 className="title-text mb-6">Заявки водителей</h1>
+            <Tabs defaultValue="PENDING" className="w-full mt-4">
+                <TabsList className="w-72 sm:w-96 px-1">
+                    <TabsTrigger value="PENDING" className="w-4 text-xs sm:text-md">В процессе</TabsTrigger>
+                    <TabsTrigger value="VERIFIED" className="w-4 text-xs sm:text-md">Подтверждено</TabsTrigger>
+                    <TabsTrigger value="REJECTED" className="w-4 text-xs sm:text-md">Отказано</TabsTrigger>
+                </TabsList>
+                <TabsContent value="PENDING"><ApplicationsTable status="PENDING" /></TabsContent>
+                <TabsContent value="VERIFIED"><ApplicationsTable status="VERIFIED" /></TabsContent>
+                <TabsContent value="REJECTED"><ApplicationsTable status="REJECTED" /></TabsContent>
+            </Tabs>
         </div>
     );
 };

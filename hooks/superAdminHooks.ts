@@ -69,17 +69,6 @@ export const useDeleteAdmin = () => {
     });
 };
 
-// Stats
-export const useGetAdminStats = () => {
-    return useQuery({
-        queryKey: queryKeys.superAdmin.stats(),
-        queryFn: async () => {
-            const { data } = await api.get("/super-admin/admins/stats");
-            return data.data;
-        },
-    });
-};
-
 // Logs
 export const useGetAdminLogs = (adminId: string, filters: any) => {
     return useInfiniteQuery({

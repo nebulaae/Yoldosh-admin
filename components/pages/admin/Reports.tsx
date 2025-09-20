@@ -282,12 +282,12 @@ export const Reports = () => {
     return (
         <div>
             <Toaster />
-            <div><h1 className="title-text">Жалобы</h1></div>
+            <h1 className="title-text">Жалобы</h1>
             <Tabs defaultValue="PENDING" className="w-full mt-4">
-                <TabsList className="w-64 px-1">
-                    <TabsTrigger value="PENDING" className="w-4 text-xs">В ожидании</TabsTrigger>
-                    <TabsTrigger value="RESOLVED" className="w-4 text-xs">Решенные</TabsTrigger>
-                    <TabsTrigger value="REJECTED" className="w-4 text-xs">Отклоненные</TabsTrigger>
+                <TabsList className="w-64 sm:w-96 px-1">
+                    <TabsTrigger value="PENDING" className="w-4 text-xs sm:text-md">В ожидании</TabsTrigger>
+                    <TabsTrigger value="RESOLVED" className="w-4 text-xs sm:text-md">Решенные</TabsTrigger>
+                    <TabsTrigger value="REJECTED" className="w-4 text-xs sm:text-md">Отклоненные</TabsTrigger>
                 </TabsList>
                 <TabsContent value="PENDING"><ReportsTable status="PENDING" /></TabsContent>
                 <TabsContent value="RESOLVED"><ReportsTable status="RESOLVED" /></TabsContent>

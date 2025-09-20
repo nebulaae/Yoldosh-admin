@@ -1,11 +1,11 @@
 "use client"
 
 import { z } from "zod";
-import { useState } from "react"
 import { useForm } from "react-hook-form";
-import { useDebounceValue } from "usehooks-ts";
+import { useEffect, useState } from "react";
 import { createAdminSchema } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useIntersectionObserver } from "usehooks-ts";
 import {
     useGetAllAdmins,
     useCreateAdmin,
@@ -40,33 +40,23 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 
 export const Admins = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [sort, setSort] = useState({ sortBy: "createdAt", sortOrder: "DESC" });
-    const debouncedSearch = useDebounceValue(searchTerm, 500);
 
-    const filters = {
-        search: debouncedSearch[0],
-        sortBy: sort.sortBy,
-        sortOrder: sort.sortOrder,
-    };
-
-    const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllAdmins(filters);
+    const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllAdmins({});
     const { mutate: createAdmin, isPending: isCreating } = useCreateAdmin();
     const { mutate: deleteAdmin, isPending: isDeleting } = useDeleteAdmin();
+
+    const { ref, isIntersecting } = useIntersectionObserver({
+        threshold: 0.5,
+    });
 
     const form = useForm<z.infer<typeof createAdminSchema>>({
         resolver: zodResolver(createAdminSchema),
         defaultValues: { email: "", firstName: "", lastName: "" },
     });
+
 
     const onSubmit = (values: z.infer<typeof createAdminSchema>) => {
         createAdmin(values, {
@@ -81,15 +71,21 @@ export const Admins = () => {
         if (window.confirm("Are you sure you want to delete this admin?")) {
             deleteAdmin(adminId);
         }
-    }
+    };
 
-    const allAdmins = data?.pages.flatMap((page: any) => page.admins) ?? [];
+    useEffect(() => {
+        if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const allAdmins = data?.pages.flatMap((page: any) => page.admins.rows) ?? [];
 
     return (
         <div>
             <Toaster richColors />
-            <div className="flex flex-col md:flex-row gap-2 justify-between items-center mb-6">
-                <h1 className="title-text">Управление администраторами</h1>
+            <div className="flex gap-2 justify-between items-center mb-6">
+                <h1 className="title-text">Управление админами</h1>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild><Button>Создать админа</Button></DialogTrigger>
                     <DialogContent>
@@ -114,20 +110,6 @@ export const Admins = () => {
                         </Form>
                     </DialogContent>
                 </Dialog>
-            </div>
-
-            <div className="flex justify-between items-center gap-2 my-4">
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Поиск по имени, почте..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "ASC" })}>Сначала старые</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
             </div>
 
             <div className="border rounded-lg">
@@ -156,7 +138,13 @@ export const Admins = () => {
                                     <TableCell>{admin.email}</TableCell>
                                     <TableCell>{admin.role}</TableCell>
                                     <TableCell className="w-32">
-                                        <Button size="sm" variant="destructive" disabled={isDeleting} onClick={() => handleDelete(admin.id)}>Удалить</Button>
+                                        <Button
+                                            size="sm"
+                                            className="bg-red-200/50 text-red-800 hover:bg-red-200 transition"
+                                            disabled={isDeleting}
+                                            onClick={() => handleDelete(admin.id)}
+                                        >
+                                            Удалить</Button>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -167,16 +155,20 @@ export const Admins = () => {
                                 </TableCell>
                             </TableRow>
                         )}
+                        {hasNextPage && (
+                            <TableRow>
+                                <TableCell colSpan={4} ref={ref}>
+                                    {isFetchingNextPage && (
+                                        <div className='flex justify-center items-center p-4'>
+                                            <p>Загрузка...</p>
+                                        </div>
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </div>
-            {hasNextPage && (
-                <div className="mt-4 flex justify-center">
-                    <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                        {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
-                    </Button>
-                </div>
-            )}
         </div>
     );
 };

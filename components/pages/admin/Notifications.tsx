@@ -1,12 +1,12 @@
 "use client"
 
 import { z } from "zod";
-import { useState } from "react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
-import { useDebounceValue } from "usehooks-ts";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
 import {
     formatDate,
     getStatusColor,
@@ -68,7 +68,7 @@ export const Notifications = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [sort, setSort] = useState({ sortBy: "createdAt", sortOrder: "DESC" });
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
-    const debouncedSearch = useDebounceValue(searchTerm, 500);
+    const [debouncedSearch] = useDebounceValue(searchTerm, 500);
 
     const filters = {
         search: debouncedSearch,
@@ -78,17 +78,27 @@ export const Notifications = () => {
         endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
     };
 
+    const { ref, isIntersecting } = useIntersectionObserver({
+        threshold: 0.5,
+    });
+
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetNotifications(filters);
     const { mutate: sendNotification, isPending } = useCreateGlobalNotification();
 
     const form = useForm<z.infer<typeof globalNotificationSchema>>({
         resolver: zodResolver(globalNotificationSchema),
-        defaultValues: { content: "", type: "GENERAL" },
+        defaultValues: { content: "", type: "general" },
     });
 
     const onSubmit = (values: z.infer<typeof globalNotificationSchema>) => {
         sendNotification(values, { onSuccess: () => form.reset() });
     };
+
+    useEffect(() => {
+        if (isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const allNotifications = data?.pages.flatMap(page => page.notifications) ?? [];
 
@@ -179,11 +189,14 @@ export const Notifications = () => {
                             <TableBody>
                                 {isLoading ? (
                                     Array.from({ length: 5 }).map((_, i) => (
-                                        <TableRow key={i}><TableCell colSpan={3}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                                        <TableRow key={i}>
+                                            <TableCell colSpan={3}><Skeleton className="h-8 w-full" />
+                                            </TableCell>
+                                        </TableRow>
                                     ))
                                 ) : allNotifications.length > 0 ? (
                                     allNotifications.map((notif: any) => (
-                                        <TableRow key={notif.id}>
+                                        <TableRow key={notif.createdAt}>
                                             <TableCell className="font-medium">{notif.message}</TableCell>
                                             <TableCell><span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(notif.type)}`}>{notif.type}</span></TableCell>
                                             <TableCell>{formatDate(notif.createdAt)}</TableCell>
@@ -192,16 +205,20 @@ export const Notifications = () => {
                                 ) : (
                                     <TableRow><TableCell colSpan={3} className="text-center h-24">Уведомлений пока нет.</TableCell></TableRow>
                                 )}
+                                {hasNextPage && (
+                                    <TableRow>
+                                        <TableCell colSpan={4} ref={ref}>
+                                            {isFetchingNextPage && (
+                                                <div className='flex justify-center items-center p-4'>
+                                                    <p>Загрузка...</p>
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </div>
-                    {hasNextPage && (
-                        <div className="mt-4 flex justify-center">
-                            <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                                {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
-                            </Button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

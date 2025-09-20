@@ -53,20 +53,16 @@ export const SuperAdminSidebar = () => {
                     <SidebarGroupContent className="h-full">
                         <SidebarMenu className="flex flex-col justify-between h-full py-4">
                             <div className="space-y-2">
-                                {items.map((item) => {
-                                    const pathname = usePathname();
-
-                                    return (
-                                        <SidebarMenuItem key={item.title}>
-                                            <SidebarMenuButton asChild>
-                                                <Link href={item.url} className={`${pathname === item.url ? 'bg-neutral-200' : ''}`}>
-                                                    <item.icon />
-                                                    <span>{item.title}</span>
-                                                </Link>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    )
-                                })}
+                                {items.map((item) => (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton asChild>
+                                            <Link href={item.url} className={`${pathname === item.url ? 'bg-neutral-200' : ''}`}>
+                                                <item.icon />
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ))}
                             </div>
                             <div className="px-2">
                                 <SidebarMenuItem>

@@ -238,6 +238,7 @@ export const useCreateCarModel = () => {
         },
     });
 };
+
 export const useDeleteCarModel = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -245,7 +246,7 @@ export const useDeleteCarModel = () => {
             await api.delete(`/admin/car-models/${id}`);
         },
         onSuccess: () => {
-            toast.success("Модель машины успешно удалена");
+            toast.success("Модель машины успешно удалена.");
             queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels({}) });
         }
     });
@@ -275,7 +276,7 @@ export const useCreateRestrictedWord = () => {
             await api.post("/admin/moderation/words", values);
         },
         onSuccess: () => {
-            toast.success("Слово успешно добавлено в список.");
+            toast.success("Слово успешно добавлен в список.");
             queryClient.invalidateQueries({ queryKey: queryKeys.admin.restrictedWords({}) });
         },
     });

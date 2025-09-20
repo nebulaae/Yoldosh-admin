@@ -44,7 +44,7 @@ export const Logs = () => {
     const { data: adminsData, isLoading: isAdminLoading } = useGetAllAdmins({});
 
     // Filters for logs
-    const [searchTerm, setSearchTerm] = useState("");
+    const [searchTerm] = useState("");
     const [sort, setSort] = useState({ sortBy: "timestamp", sortOrder: "DESC" });
     const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const [debouncedSearch] = useDebounceValue(searchTerm, 500);
@@ -59,8 +59,8 @@ export const Logs = () => {
 
     const { data: logsData, isLoading: isLogsLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAdminLogs(selectedAdminId!, filters);
 
-    const allLogs = logsData?.pages.flatMap((page: any) => page.logs) ?? [];
-    const allAdmins = adminsData?.pages.flatMap((page: any) => page.admins) ?? [];
+    const allLogs = logsData?.pages.flatMap((page: any) => page) ?? [];
+    const allAdmins = adminsData?.pages.flatMap((page: any) => page.admins.rows) ?? [];
 
     return (
         <div>
@@ -83,15 +83,8 @@ export const Logs = () => {
                     </div>
                 </div>
                 <div className="md:col-span-3">
-                    <h2 className="font-semibold mb-3">
-                        {selectedAdminId ? `Логи для ${allAdmins?.find((a: any) => a.id === selectedAdminId)?.firstName}` : "Выберите администратора"}
-                    </h2>
                     {selectedAdminId && (
                         <div className="flex justify-between items-center gap-2 my-4">
-                            <div className="relative w-full max-w-sm">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="Поиск по действию, деталям..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                            </div>
                             <div className="flex items-center gap-2">
                                 <Popover>
                                     <PopoverTrigger asChild>
@@ -117,7 +110,7 @@ export const Logs = () => {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Действие</TableHead>
-                                    <TableHead>Детали</TableHead>
+                                    {/* <TableHead>Детали</TableHead> */}
                                     <TableHead>Дата</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -130,7 +123,7 @@ export const Logs = () => {
                                     allLogs.map((log: any) => (
                                         <TableRow key={log.id}>
                                             <TableCell className="font-medium">{log.action}</TableCell>
-                                            <TableCell>{log.details}</TableCell>
+                                            {/* <TableCell>{log.details}</TableCell> */}
                                             <TableCell>{formatDate(log.timestamp)}</TableCell>
                                         </TableRow>
                                     ))
