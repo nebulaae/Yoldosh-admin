@@ -10,7 +10,8 @@ import {
     Home,
     LogOut,
     Route,
-    ShieldAlert
+    ShieldAlert,
+    TicketPercent
 } from "lucide-react";
 import {
     Sidebar,
@@ -58,6 +59,11 @@ const items = [
         title: "Модели машин",
         url: "/admin/car-models",
         icon: CarFront,
+    },
+    {
+        title: "Промокоды",
+        url: "/admin/promocodes",
+        icon: TicketPercent,
     },
     {
         title: "Модерация",

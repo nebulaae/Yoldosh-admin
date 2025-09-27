@@ -13,6 +13,7 @@ import {
     editTripSchema,
     globalNotificationSchema,
     loginSchema,
+    promoCodeGrantSchema,
     queryKeys,
     updateApplicationStatusSchema,
     updateReportStatusSchema,
@@ -294,3 +295,46 @@ export const useDeleteRestrictedWord = () => {
         }
     });
 }
+
+// Users for Promocodes
+export const useGetAllUsers = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.users(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/users", {
+                params: { ...filters, page: pageParam }
+            });
+            return data.data;
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
+    });
+};
+
+export const useGrantPromoCode = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (values: z.infer<typeof promoCodeGrantSchema>) => {
+            await api.post(`/admin/promocodes/${values.userId}`, { discountPercentage: values.discountPercentage });
+        },
+        onSuccess: () => {
+            toast.success("Промокод успешно выдан");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.users({}) });
+        },
+    });
+};
+
+export const useDeletePromoCode = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (promoCodeId: string) => {
+            await api.delete(`/admin/promocodes/${promoCodeId}`);
+        },
+        onSuccess: () => {
+            toast.success("Промокод успешно удален");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.users({}) });
+        }
+    });
+};

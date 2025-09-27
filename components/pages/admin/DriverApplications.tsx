@@ -77,8 +77,8 @@ const ApplicationsTable = ({ status }: { status: ApplicationStatus }) => {
         }
     }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const handleStatusUpdate = (userId: string, status: "VERIFIED" | "REJECTED") => {
-        updateStatus({ userId, status });
+    const handleStatusUpdate = (userId: string, newStatus: "VERIFIED" | "REJECTED") => {
+        updateStatus({ userId, status: newStatus });
     };
 
     const allApplications = data?.pages.flatMap(page => page.applications) ?? [];
@@ -89,7 +89,7 @@ const ApplicationsTable = ({ status }: { status: ApplicationStatus }) => {
                 <div className="relative w-full max-w-sm">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Поиск по User ID или статусу..."
+                        placeholder="Поиск по имени, фамилии, телефону..."
                         className="pl-8"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -124,39 +124,45 @@ const ApplicationsTable = ({ status }: { status: ApplicationStatus }) => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>User ID</TableHead>
+                            <TableHead>Имя</TableHead>
+                            <TableHead>Фамилия</TableHead>
+                            <TableHead>Телефон</TableHead>
                             <TableHead>Паспорт</TableHead>
                             <TableHead>Паспорт машины</TableHead>
                             <TableHead>Статус</TableHead>
-                            <TableHead>Действия</TableHead>
+                            {status === 'PENDING' && <TableHead>Действия</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {isLoading ? (
                             Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                                <TableRow key={i}><TableCell colSpan={status === 'PENDING' ? 7 : 6}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
                             ))
                         ) : allApplications.length > 0 ? (
                             allApplications.map((app: any) => (
                                 <TableRow key={app.id}>
-                                    <TableCell>{app.userId}</TableCell>
-                                    <TableCell><a href={app.passport_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View</a></TableCell>
-                                    <TableCell><a href={app.car_passport_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View</a></TableCell>
+                                    <TableCell>{app.user.firstName}</TableCell>
+                                    <TableCell>{app.user.lastName}</TableCell>
+                                    <TableCell>{app.user.phoneNumber}</TableCell>
+                                    <TableCell><a href={app.passport_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Посмотреть</a></TableCell>
+                                    <TableCell><a href={app.car_passport_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Посмотреть</a></TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(app.status)}`}>{app.status}</span>
                                     </TableCell>
-                                    <TableCell className="space-x-2">
-                                        <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleStatusUpdate(app.userId, "VERIFIED")} disabled={isPending}>Подтвердить</Button>
-                                        <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-100" onClick={() => handleStatusUpdate(app.userId, "REJECTED")} disabled={isPending}>Отказать</Button>
-                                    </TableCell>
+                                    {status === 'PENDING' && (
+                                        <TableCell className="space-x-2">
+                                            <Button size="sm" variant="outline" className="text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleStatusUpdate(app.userId, "VERIFIED")} disabled={isPending}>Подтвердить</Button>
+                                            <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-100" onClick={() => handleStatusUpdate(app.userId, "REJECTED")} disabled={isPending}>Отказать</Button>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             ))
                         ) : (
-                            <TableRow><TableCell colSpan={5} className="text-center h-24">Нет активных заявок.</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={status === 'PENDING' ? 7 : 6} className="text-center h-24">Нет заявок.</TableCell></TableRow>
                         )}
                         {hasNextPage && (
                             <TableRow>
-                                <TableCell colSpan={5} ref={ref}>
+                                <TableCell colSpan={status === 'PENDING' ? 7 : 6} ref={ref}>
                                     {isFetchingNextPage && <div className='flex justify-center p-4'><p>Загрузка...</p></div>}
                                 </TableCell>
                             </TableRow>
@@ -171,13 +177,13 @@ const ApplicationsTable = ({ status }: { status: ApplicationStatus }) => {
 export const DriverApplications = () => {
     return (
         <div>
-            <Toaster />
+            <Toaster richColors />
             <h1 className="title-text mb-6">Заявки водителей</h1>
             <Tabs defaultValue="PENDING" className="w-full mt-4">
-                <TabsList className="w-72 sm:w-96 px-1">
-                    <TabsTrigger value="PENDING" className="w-4 text-xs sm:text-md">В процессе</TabsTrigger>
-                    <TabsTrigger value="VERIFIED" className="w-4 text-xs sm:text-md">Подтверждено</TabsTrigger>
-                    <TabsTrigger value="REJECTED" className="w-4 text-xs sm:text-md">Отказано</TabsTrigger>
+                <TabsList className="w-full sm:w-96 grid grid-cols-3">
+                    <TabsTrigger value="PENDING">В процессе</TabsTrigger>
+                    <TabsTrigger value="VERIFIED">Подтверждено</TabsTrigger>
+                    <TabsTrigger value="REJECTED">Отказано</TabsTrigger>
                 </TabsList>
                 <TabsContent value="PENDING"><ApplicationsTable status="PENDING" /></TabsContent>
                 <TabsContent value="VERIFIED"><ApplicationsTable status="VERIFIED" /></TabsContent>

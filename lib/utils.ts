@@ -96,6 +96,12 @@ export const createAdminSchema = z.object({
     .max(50, "Last name must not exceed 50 characters"),
 });
 
+// Promocode Grant Schema
+export const promoCodeGrantSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
+  discountPercentage: z.number().min(1, "Скидка должна быть не менее 1%").max(30, "Скидка не может превышать 30%"),
+});
+
 // Utility function to format error messages
 export const formatErrorMessage = (error: any): string => {
   if (error?.response?.data?.message) {
@@ -157,6 +163,8 @@ export const queryKeys = {
     notifications: (filters: any = {}) => [...queryKeys.admin.all, 'notifications', filters] as const,
     carModels: (filters: any = {}) => [...queryKeys.admin.all, 'car-models', filters] as const,
     restrictedWords: (filters: any = {}) => [...queryKeys.admin.all, 'restricted-words', filters] as const,
+    users: (filters: any = {}) => [...queryKeys.admin.all, 'users', filters] as const,
+    promoCodes: (filters: any = {}) => [...queryKeys.admin.all, 'promo-codes', filters] as const,
   },
   superAdmin: {
     all: ['super-admin'] as const,
