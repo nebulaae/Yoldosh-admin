@@ -18,6 +18,13 @@ import { Toaster } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Trash2 } from "lucide-react";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     Table,
     TableBody,
     TableCell,
@@ -52,12 +59,20 @@ type User = {
     } | null;
 };
 
+type PromoFilter = "all" | "with" | "without"; // ADDED
+
 export const Promocodes = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearch] = useDebounceValue(searchTerm, 500);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [promoFilter, setPromoFilter] = useState<PromoFilter>("all"); // ADDED State for filter
 
-    const filters = { search: debouncedSearch };
+    // UPDATED: Filters object now includes role and promocode status
+    const filters = {
+        search: debouncedSearch,
+        role: "Passenger", // Hardcode role to Passenger
+        hasPromoCode: promoFilter === "all" ? undefined : promoFilter === "with",
+    };
 
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllUsers(filters);
     const { mutate: grantPromoCode, isPending: isGranting } = useGrantPromoCode();
@@ -92,13 +107,26 @@ export const Promocodes = () => {
 
     return (
         <div>
-            <Toaster richColors />
+            <Toaster />
             <div className="flex justify-between items-center mb-6">
                 <h1 className="title-text">Промокоды пользователей</h1>
             </div>
-            <div className="relative w-full max-w-sm mb-4">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Поиск по имени, фамилии, номеру..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                <div className="relative w-full max-w-sm">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Поиск по имени, фамилии, номеру..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                </div>
+                <Select value={promoFilter} onValueChange={(value) => setPromoFilter(value as PromoFilter)}>
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                        <SelectValue placeholder="Фильтр по промокоду" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Все Пассажиры</SelectItem>
+                        <SelectItem value="with">С промокодом</SelectItem>
+                        <SelectItem value="without">Без промокода</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
 
             <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedUser(null)}>

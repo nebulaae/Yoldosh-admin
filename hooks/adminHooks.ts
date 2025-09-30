@@ -299,9 +299,11 @@ export const useDeleteRestrictedWord = () => {
 // Users for Promocodes
 export const useGetAllUsers = (filters: { [key: string]: any }) => {
     return useInfiniteQuery({
+        // The key now includes all filters to ensure unique queries
         queryKey: queryKeys.admin.users(filters),
         queryFn: async ({ pageParam = 1 }) => {
             const { data } = await api.get("/admin/users", {
+                // Pass all filters to the API
                 params: { ...filters, page: pageParam }
             });
             return data.data;

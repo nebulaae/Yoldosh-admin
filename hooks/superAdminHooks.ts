@@ -87,3 +87,14 @@ export const useGetAdminLogs = (adminId: string, filters: any) => {
         enabled: !!adminId,
     });
 };
+
+// Stats
+export const useGetSuperAdminStats = () => {
+    return useQuery({
+        queryKey: queryKeys.superAdmin.stats(),
+        queryFn: async () => {
+            const { data } = await api.get('/super-admin/stats');
+            return data.data;
+        },
+    });
+};
