@@ -65,24 +65,31 @@ export const Logs = () => {
     return (
         <div>
             <h1 className="title-text mb-6">Логи Администраторов</h1>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="md:col-span-1">
+            <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
+                <div className="w-full">
                     <h2 className="font-semibold mb-3">Администраторы</h2>
-                    <div className="border rounded-lg bg-white p-2 space-y-1">
+                    <div className="border rounded-lg component p-2 space-y-1">
                         {isAdminLoading ? (
                             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)
                         ) : allAdmins?.length > 0 ? (
                             allAdmins.map((admin: any) => (
-                                <button key={admin.id} onClick={() => setSelectedAdminId(admin.id)} className={cn("w-full text-left p-2 rounded-md transition-colors", selectedAdminId === admin.id ? "bg-blue-100 text-blue-800 font-medium" : "hover:bg-gray-100")}>
+                                <button
+                                    key={admin.id}
+                                    onClick={() => setSelectedAdminId(admin.id)}
+                                    className={cn("w-full text-left p-2 rounded-md transition-colors",
+                                        selectedAdminId === admin.id
+                                            ? "component-dark"
+                                            : "hover:bg-gray-100 dark:hover:bg-gray-900")}
+                                >
                                     {admin.firstName} {admin.lastName}
                                 </button>
                             ))
                         ) : (
-                            <p className="p-2 text-sm text-gray-500">Администраторы не найдены.</p>
+                            <p className="p-2 text-sm text-muted-foreground">Администраторы не найдены.</p>
                         )}
                     </div>
                 </div>
-                <div className="md:col-span-3">
+                <div className="w-full overflow-auto">
                     {selectedAdminId && (
                         <div className="flex justify-between items-center gap-2 my-4">
                             <div className="flex items-center gap-2">
@@ -105,7 +112,7 @@ export const Logs = () => {
                             </div>
                         </div>
                     )}
-                    <div className="border rounded-lg">
+                    <div className="component border rounded-lg">
                         <Table>
                             <TableHeader>
                                 <TableRow>

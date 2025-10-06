@@ -25,9 +25,9 @@ export const Home = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2">
-            <h2 className="title-text">Добро пожаловать {admin.firstName} {admin.lastName}!</h2>
-            <p className="text-base">Ваша роль: {admin.role}</p>
+        <div className="flex flex-col gap-1">
+            <h2 className="title-text">Главное</h2>
+            <p className="text-base from-secondary-foreground">Обзор основных показателей</p>
         </div>
     );
 };

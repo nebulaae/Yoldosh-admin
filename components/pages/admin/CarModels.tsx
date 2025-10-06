@@ -81,22 +81,38 @@ export const CarModels = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="title-text">Модели Машин</h1>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild><Button>Добавить модель</Button></DialogTrigger>
+                    <DialogTrigger asChild>
+                        <Button className="btn-primary shadow-glow">Добавить модель</Button>
+                    </DialogTrigger>
                     <DialogContent>
-                        <DialogHeader><DialogTitle>Добавить новую модель машины</DialogTitle></DialogHeader>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Добавить новую модель машины
+                            </DialogTitle>
+                        </DialogHeader>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                                 <FormField control={form.control} name="make" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Производитель</FormLabel>
-                                        <FormControl><Input placeholder="e.g., Chevrolet" {...field} /></FormControl>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="e.g., Chevrolet"
+                                                {...field}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
                                 <FormField control={form.control} name="model" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Модель</FormLabel>
-                                        <FormControl><Input placeholder="e.g., Cobalt" {...field} /></FormControl>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="e.g., Cobalt"
+                                                {...field}
+                                            />
+                                        </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )} />
@@ -122,7 +138,11 @@ export const CarModels = () => {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit" disabled={isCreating}>
+                                <Button
+                                    type="submit"
+                                    disabled={isCreating}
+                                    className="btn-primary shadow-glow"
+                                >
                                     {isCreating ? "Добавление..." : "Добавить"}
                                 </Button>
                             </form>
@@ -135,18 +155,16 @@ export const CarModels = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>#</TableHead>
-                            <TableHead>Производитель</TableHead>
-                            <TableHead>Модель</TableHead>
-                            <TableHead>Места</TableHead>
-                            <TableHead className="text-right">Действия</TableHead>
+                            <TableHead className="text-muted-foreground">Производитель</TableHead>
+                            <TableHead className="text-muted-foreground">Модель</TableHead>
+                            <TableHead className="text-muted-foreground">Места</TableHead>
+                            <TableHead className="text-right text-muted-foreground">Действия</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {isLoading ? (
                             Array.from({ length: 5 }).map((_, i) => (
                                 <TableRow key={i}>
-                                    <TableCell><Skeleton className="h-5 w-5" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
@@ -154,9 +172,8 @@ export const CarModels = () => {
                                 </TableRow>
                             ))
                         ) : data!.pages.flatMap(page => page.cars).length > 0 ? (
-                            data!.pages.flatMap((page, pageIndex) => page.cars.map((model: any, modelIndex: number) => (
+                            data!.pages.flatMap((page) => page.cars.map((model: any) => (
                                 <TableRow key={model.id}>
-                                    <TableCell>{pageIndex * 10 + modelIndex + 1}</TableCell>
                                     <TableCell>{model.make}</TableCell>
                                     <TableCell>{model.model}</TableCell>
                                     <TableCell>{model.seats_std}</TableCell>

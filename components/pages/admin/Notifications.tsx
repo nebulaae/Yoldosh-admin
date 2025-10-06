@@ -105,16 +105,23 @@ export const Notifications = () => {
     return (
         <div>
             <Toaster />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="md:col-span-1">
-                    <h1 className="title-text mb-2">Отправить Уведомление</h1>
-                    <p className="text-sm text-gray-500 mb-6">Отправьте глобальное уведомление всем пользователям.</p>
+            <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-8">
+                <div className="w-full">
+                    <h1 className="title-text mb-2">Уведомление</h1>
+                    <p className="text-sm text-gray-500 mb-6">Отправка push-уведомлений пользователям.</p>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-lg border">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="component space-y-6 p-6 rounded-lg border">
+                            <h1 className="text-xl font-bold">Создать уведомление</h1>
                             <FormField control={form.control} name="content" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Содержание</FormLabel>
-                                    <FormControl><Textarea placeholder="Текст вашего уведомления..." className="min-h-[120px]" {...field} /></FormControl>
+                                    <FormControl>
+                                        <Textarea
+                                            placeholder="Текст уведомления..."
+                                            className="min-h-[60px] component-dark"
+                                            {...field}
+                                        />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />
@@ -123,8 +130,8 @@ export const Notifications = () => {
                                     <FormLabel>Тип уведомления</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Выберите тип" />
+                                            <SelectTrigger className="component-dark">
+                                                <SelectValue placeholder="Выберите тип" className="component-dark" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -140,15 +147,15 @@ export const Notifications = () => {
                             )} />
                             <Button
                                 type="submit"
-                                className="w-full"
+                                className="w-full btn-primary shadow-glow"
                                 disabled={isPending}>
                                 {isPending ? "Отправка..." : "Отправить"}
                             </Button>
                         </form>
                     </Form>
                 </div>
-                <div className="md:col-span-2">
-                    <h2 className="title-text mb-6">История уведомлений</h2>
+                <div className="w-full">
+                    <h2 className="title-text mb-6">История отправленных</h2>
 
                     <div className="flex justify-between items-center gap-2 my-4">
                         <div className="relative w-full max-w-sm">
@@ -177,7 +184,7 @@ export const Notifications = () => {
                         </div>
                     </div>
 
-                    <div className="border rounded-lg">
+                    <div className="border rounded-lg component">
                         <Table>
                             <TableHeader>
                                 <TableRow>

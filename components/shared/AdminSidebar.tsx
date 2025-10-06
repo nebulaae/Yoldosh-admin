@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 
+import { Separator } from "../ui/separator";
 import {
     Bell,
-    Car,
     CarFront,
+    CarIcon,
     Flag,
     Home,
     LogOut,
     Route,
+    Search,
     ShieldAlert,
-    TicketPercent
+    TicketPercent,
+    UserRoundCheck
 } from "lucide-react";
 import {
     Sidebar,
@@ -23,7 +26,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Button } from "../ui/button";
 
 import { usePathname } from "next/navigation";
 import { useAdminLogout } from "@/hooks/adminHooks";
@@ -38,7 +40,7 @@ const items = [
     {
         title: "Заявки водителей",
         url: "/admin/driver-applications",
-        icon: Car,
+        icon: UserRoundCheck,
     },
     {
         title: "Жалобы",
@@ -81,17 +83,39 @@ export const AdminSidebar = () => {
     }
 
     return (
-        <Sidebar>
-            <SidebarContent>
+        <Sidebar collapsible="icon">
+            <SidebarContent className="bg-gray-50 dark:bg-gray-950">
                 <SidebarGroup className="h-full">
-                    <SidebarGroupLabel>Yoldosh Admin</SidebarGroupLabel>
-                    <SidebarGroupContent className="h-full">
-                        <SidebarMenu className="flex flex-col justify-between h-full py-4">
-                            <div className="space-y-2">
+                    <SidebarGroupLabel>
+                        <div className="flex flex-row items-center justify-center gap-2 mt-6">
+                            <div className="bg-gradient-to-br from-emerald-400 to-teal-700 text-white rounded-xl p-2">
+                                <CarIcon className="size-5" />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                                <h1 className="text-lg font-bold text-black dark:text-white">Yoldosh</h1>
+                                <p>Admin</p>
+                            </div>
+                        </div>
+                    </SidebarGroupLabel>
+                    <SidebarGroupContent className="mt-8 h-full">
+                        <Separator orientation="horizontal" />
+                        <SidebarMenu className="flex flex-col h-full py-4">
+                            <div>
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton asChild className="w-full bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 dark:border-gray-700 cursor-pointer">
+                                        <button className="flex items-center justify-center py-4">
+                                            <Search className="ml-2" />
+                                            <span>Поиск пользователя</span>
+                                        </button>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                                <Separator orientation="horizontal" className="mt-4 " />
+                            </div>
+                            <div className="mt-2 space-y-1">
                                 {items.map((item) => (
                                     <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild>
-                                            <Link href={item.url} className={`${pathname === item.url ? 'bg-neutral-200' : ''}`}>
+                                        <SidebarMenuButton asChild className="hover:bg-emerald-700/40 text-emerald-950 dark:text-emerald-500 dark:hover:bg-gray-50/10 dark:hover:text-white">
+                                            <Link href={item.url} className={`${pathname === item.url ? 'bg-emerald-800/20 text-emerald-900' : 'text-emerald-800'}`}>
                                                 <item.icon />
                                                 <span>{item.title}</span>
                                             </Link>
@@ -99,13 +123,13 @@ export const AdminSidebar = () => {
                                     </SidebarMenuItem>
                                 ))}
                             </div>
-                            <div>
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton asChild className="hover:bg-red-200 hover:text-red-800 transition">
-                                        <Button onClick={handleLogout} disabled={isPending} className="bg-red-200/50 text-red-800 cursor-pointer">
+                            <div className="flex justify-center items-end h-full w-full">
+                                <SidebarMenuItem className="w-full">
+                                    <SidebarMenuButton asChild className="hover:text-red-800 dark:hover:bg-gray-50/10 dark:hover:text-white  transition">
+                                        <button onClick={handleLogout} disabled={isPending} className="text-red-500 cursor-pointer">
                                             <LogOut />
                                             {isPending ? "Завершаем сессию..." : "Завершить сессию"}
-                                        </Button>
+                                        </button>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </div>
@@ -114,5 +138,5 @@ export const AdminSidebar = () => {
                 </SidebarGroup>
             </SidebarContent>
         </Sidebar>
-    )
-}
+    );
+};

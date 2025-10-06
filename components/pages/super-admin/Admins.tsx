@@ -87,22 +87,73 @@ export const Admins = () => {
             <div className="flex gap-2 justify-between items-center mb-6">
                 <h1 className="title-text">Управление админами</h1>
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild><Button>Создать админа</Button></DialogTrigger>
+                    <DialogTrigger asChild>
+                        <Button className="btn-primary shadow-glow">Создать админа</Button>
+                    </DialogTrigger>
                     <DialogContent>
-                        <DialogHeader><DialogTitle>Создать нового админа</DialogTitle></DialogHeader>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Создать нового админа
+                            </DialogTitle>
+                        </DialogHeader>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField control={form.control} name="email" render={({ field }) => (
-                                    <FormItem><FormLabel>Почта</FormLabel><FormControl><Input placeholder="admin@yoldosh.uz" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="firstName" render={({ field }) => (
-                                    <FormItem><FormLabel>Имя</FormLabel><FormControl><Input placeholder="John" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField control={form.control} name="lastName" render={({ field }) => (
-                                    <FormItem><FormLabel>Фамилия</FormLabel><FormControl><Input placeholder="Doe" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
+                            <form
+                                onSubmit={form.handleSubmit(onSubmit)}
+                                className="space-y-4"
+                            >
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Почта
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="admin@yoldosh.uz"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="firstName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Имя
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="John"
+                                                    {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="lastName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Фамилия
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Doe"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
                                 <Button
                                     type="submit"
+                                    className="btn-primary shadow-glow"
                                     disabled={isCreating}>
                                     {isCreating ? "Создание..." : "Создать"}
                                 </Button>
@@ -140,7 +191,7 @@ export const Admins = () => {
                                     <TableCell className="w-32">
                                         <Button
                                             size="sm"
-                                            className="bg-red-200/50 text-red-800 hover:bg-red-200 transition"
+                                            variant="destructive"
                                             disabled={isDeleting}
                                             onClick={() => handleDelete(admin.id)}
                                         >

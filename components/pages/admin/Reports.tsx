@@ -129,7 +129,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Поиск по ID, причине, имени..."
-                        className="pl-8"
+                        className="pl-8 component-dark"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -174,7 +174,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                 </div>
             </div>
 
-            <div className="border rounded-lg bg-white">
+            <div className="border rounded-lg component">
                 <Table>
                     <TableHeader>
                         <TableRow>
