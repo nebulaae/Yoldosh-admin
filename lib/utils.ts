@@ -127,9 +127,9 @@ export const formatDate = (dateString: string): string => {
 // Status color utilities
 export const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
+    PENDING: "bg-yellow-200 text-yellow-800",
     VERIFIED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
+    REJECTED: "bg-red-200/20 text-red-800 dark:bg-red-400/20 dark:text-red-500",
     RESOLVED: "bg-blue-100 text-blue-800",
     CONFIRMED: "bg-green-100 text-green-800",
     CANCELLED: "bg-red-100 text-red-800",

@@ -15,7 +15,7 @@ const showErrorToast = (message: string) => {
 
 
 const api = axios.create({
-    baseURL: "https://api.yoldosh.uz/api/v1",
+    baseURL: "http://localhost:5000/api/v1",
     withCredentials: true,
 });
 

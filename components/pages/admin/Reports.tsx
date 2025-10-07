@@ -52,7 +52,6 @@ import {
 import {
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableHeader,
     TableRow
@@ -124,157 +123,202 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
 
     return (
         <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedReport(null)}>
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 my-4">
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Поиск по ID, причине, имени..."
-                        className="pl-8 component-dark"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex items-center gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant={"outline"}>
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange?.from ? (
-                                    dateRange.to ? (
-                                        `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
-                                    ) : (
-                                        format(dateRange.from, "LLL dd, y")
-                                    )
-                                ) : (
-                                    <span>Выберите дату</span>
-                                )}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end">
-                            <Calendar
-                                autoFocus
-                                mode="range"
-                                defaultMonth={dateRange?.from}
-                                selected={dateRange}
-                                onSelect={setDateRange}
-                                numberOfMonths={2}
-                            />
-                        </PopoverContent>
-                    </Popover>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "ASC" })}>Сначала старые</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-
-            <div className="border rounded-lg component">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Пожаловался</TableHead>
-                            <TableHead>На кого</TableHead>
-                            <TableHead>Причина</TableHead>
-                            <TableHead>Дата</TableHead>
-                            <TableHead>Статус</TableHead>
-                            <TableHead className="text-right">Действия</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell colSpan={6}><Skeleton className="h-8 w-full" /></TableCell>
-                                </TableRow>
-                            ))
-                        ) : allReports.length > 0 ? (
-                            data!.pages.map((page, i) => (
-                                <React.Fragment key={i}>
-                                    {page.reports.map((report: Report) => (
-                                        <TableRow key={report.id}>
-                                            <TableCell>{report.reportingUser?.firstName || 'N/A'}</TableCell>
-                                            <TableCell>{report.reportedUser?.firstName || 'N/A'}</TableCell>
-                                            <TableCell className="truncate max-w-xs">{report.reason}</TableCell>
-                                            <TableCell>{formatDate(report.createdAt)}</TableCell>
-                                            <TableCell>
-                                                <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
-                                                    {report.status}
-                                                </span>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                {report.status === 'PENDING' && (
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="outline" size="sm" onClick={() => setSelectedReport(report)}>Рассмотреть</Button>
-                                                    </DialogTrigger>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </React.Fragment>
-                            ))
-                        ) : (
-                            <TableRow><TableCell colSpan={6} className="text-center h-24">Жалобы не найдены.</TableCell></TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            {hasNextPage && (
-                <div className="mt-4 flex justify-center">
-                    <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                        {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
-                    </Button>
-                </div>
-            )}
-
-            {selectedReport && (
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Рассмотрение жалобы #{selectedReport.id.substring(0, 8)}</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <p><strong>От:</strong> {selectedReport.reportingUser.firstName}</p>
-                        <p><strong>На:</strong> {selectedReport.reportedUser.firstName}</p>
-                        <p><strong>Причина:</strong> {selectedReport.reason}</p>
-                        {selectedReport.status === 'PENDING' && (
-                            <div className="pt-4">
-                                <h3 className="font-semibold mb-2">Действия по жалобе</h3>
-                                <Form {...form}>
-                                    <form onSubmit={form.handleSubmit(onBanSubmit)} className="space-y-4">
-                                        <FormField control={form.control} name="reason" render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Причина бана</FormLabel>
-                                                <FormControl><Input placeholder="Нарушение правил сообщества" {...field} /></FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )} />
-                                        <FormField control={form.control} name="durationInDays" render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Срок бана (в днях, необязательно)</FormLabel>
-                                                <FormControl>
-                                                    <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )} />
-                                        <div className="flex justify-end space-x-2">
-                                            <Button type="button" variant="outline" onClick={() => updateStatus({ reportId: selectedReport.id, status: 'REJECTED' }, { onSuccess: () => setSelectedReport(null) })} disabled={isUpdating || isBanning}>Отклонить жалобу</Button>
-                                            <Button type="submit" variant="destructive" disabled={isBanning || isUpdating}>Забанить и решить</Button>
-                                        </div>
-                                    </form>
-                                </Form>
-                            </div>
-                        )}
+            <div className="flex flex-col component border rounded-2xl mt-4 px-6 py-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 my-4">
+                    <div className="relative flex w-full">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Поиск по ID, причине, имени..."
+                            className="pl-8 w-full component-dark"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-                </DialogContent>
-            )}
-        </Dialog>
+                    <div className="flex items-center gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant={"outline"}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dateRange?.from ? (
+                                        dateRange.to ? (
+                                            `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
+                                        ) : (
+                                            format(dateRange.from, "LLL dd, y")
+                                        )
+                                    ) : (
+                                        <span>Выберите дату</span>
+                                    )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                                <Calendar
+                                    autoFocus
+                                    mode="range"
+                                    defaultMonth={dateRange?.from}
+                                    selected={dateRange}
+                                    onSelect={setDateRange}
+                                    numberOfMonths={2}
+                                />
+                            </PopoverContent>
+                        </Popover>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "ASC" })}>Сначала старые</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+                {isLoading ? (
+                    <div className="grid-default">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <Skeleton className="h-8 w-full" key={i} />
+                        ))}
+                    </div>
+                ) : allReports.length > 0 ? (
+                    <div className="grid-default">
+
+                        {data!.pages.map((page, i) => (
+                            <React.Fragment key={i}>
+                                {page.reports.map((report: Report, j: number) => (
+                                    <div
+                                        className="flex flex-col gap-4 component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl p-6"
+                                        key={report.id}
+                                    >
+                                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                                            <span className="font-bold text-lg">#{j}</span>
+                                            <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                                                {report.status}
+                                            </span>
+                                            <time className="text-sm text-muted-foreground">{formatDate(report.createdAt)}</time>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+                                            <div className="flex flex-col space-y-4 text-sm">
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">От:</span>
+                                                    <span className="font-semibold">{report.reportingUser?.firstName || 'N/A'}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">На:</span>
+                                                    <span className="font-semibold">{report.reportedUser?.firstName || 'N/A'}</span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground truncate max-w-xs">Причина:</span>
+                                                    <span className="font-semibold">{report.reason}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-end text-right h-full">
+                                                {report.status === 'PENDING' && (
+                                                    <div className="flex flex-col sm:flex-row items-center gap-2">
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            className="-py-1"
+                                                            onClick={() =>
+                                                                updateStatus({
+                                                                    reportId: report.id,
+                                                                    status: 'REJECTED'
+                                                                },
+                                                                    {
+                                                                        onSuccess: () => setSelectedReport(null)
+                                                                    })}
+                                                            disabled={isUpdating || isBanning}
+                                                        >
+                                                            Отклонить
+                                                        </Button>
+                                                        <DialogTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="btn-primary shadow-glow"
+                                                                onClick={() => setSelectedReport(report)}>
+                                                                Рассмотреть
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </React.Fragment>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center w-full mt-8">
+                        <span className="subtitle-text">Жалобы не найдены.</span>
+                    </div>
+                )}
+            </div>
+
+
+            {
+                hasNextPage && (
+                    <div className="mt-4 flex justify-center">
+                        <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                            {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
+                        </Button>
+                    </div>
+                )
+            }
+
+            {
+                selectedReport && (
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Рассмотрение жалобы #{selectedReport.id.substring(0, 8)}</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4 space-y-4">
+                            {/* <p><strong>От:</strong> {selectedReport.reportingUser.firstName}</p>
+                        <p><strong>На:</strong> {selectedReport.reportedUser.firstName}</p> */}
+                            <p><strong>Причина:</strong> {selectedReport.reason}</p>
+                            {selectedReport.status === 'PENDING' && (
+                                <div className="pt-4">
+                                    <h3 className="font-semibold mb-2">Действия по жалобе</h3>
+                                    <Form {...form}>
+                                        <form onSubmit={form.handleSubmit(onBanSubmit)} className="space-y-4">
+                                            <FormField control={form.control} name="reason" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Причина бана</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder="Нарушение правил сообщества"
+                                                            {...field}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                            <FormField control={form.control} name="durationInDays" render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Срок бана (в днях, необязательно)</FormLabel>
+                                                    <FormControl>
+                                                        <Input type="number" {...field} value={field.value ?? ""} onChange={e => field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                            <div className="flex justify-end space-x-2">
+                                                <Button
+                                                    type="submit"
+                                                    variant="destructive"
+                                                    disabled={isBanning || isUpdating}>
+                                                    Забанить и решить
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </Form>
+                                </div>
+                            )}
+                        </div>
+                    </DialogContent>
+                )
+            }
+        </Dialog >
     );
 };
 
@@ -283,6 +327,7 @@ export const Reports = () => {
         <div>
             <Toaster />
             <h1 className="title-text">Жалобы</h1>
+            <p className="subtitle-text">Управление жалобами пользователей</p>
             <Tabs defaultValue="PENDING" className="w-full mt-4">
                 <TabsList className="w-64 sm:w-96 px-1">
                     <TabsTrigger value="PENDING" className="w-4 text-xs sm:text-md">В ожидании</TabsTrigger>

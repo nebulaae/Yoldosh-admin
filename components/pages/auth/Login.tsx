@@ -50,11 +50,11 @@ export const Login = () => {
 
     return (
         <>
-            <Toaster richColors />
+            <Toaster />
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="flex flex-col space-y-4 w-96 bg-gray-50 border border-gray-200 dark:bg-gray-950 dark:border-gray-700 dark:text-gray-50 rounded-xl shadow-2xl p-6 mx-2"
+                    className="flex flex-col space-y-4 w-96 component-dark-2 border rounded-xl shadow-2xl p-6 mx-2"
                 >
                     <div className="text-center">
                         <h1 className="font-semibold text-2xl">Yoldosh Admin</h1>
@@ -107,7 +107,7 @@ export const Login = () => {
                         {isPending ? "Вход..." : "Войти"}
                     </Button>
 
-                    <div className="text-center text-xs text-gray-500 pt-2">
+                    <div className="text-center text-xs text-muted-foreground pt-2">
                         Доступ разрешен только авторизованным пользователям.
                     </div>
                 </form>

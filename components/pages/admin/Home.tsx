@@ -27,7 +27,7 @@ export const Home = () => {
     return (
         <div className="flex flex-col gap-1">
             <h2 className="title-text">Главное</h2>
-            <p className="text-base from-secondary-foreground">Обзор основных показателей</p>
+            <p className="subtitle-text">Обзор основных показателей</p>
         </div>
     );
 };

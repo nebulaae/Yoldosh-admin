@@ -114,11 +114,17 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black;
   }
 
   body {
     @apply bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-50;
+  }
+}
+
+@layer utilities {
+  .grid-default {
+    @apply grid grid-cols-1 gap-4;
   }
 }
 
@@ -131,16 +137,20 @@
     @apply text-lg sm:text-xl lg:text-2xl font-bold;
   }
 
+  .subtitle-text {
+    @apply text-base text-muted-foreground;
+  }
+
   .btn-danger {
     @apply !bg-red-200/50 !text-red-800 hover:!bg-red-200;
   }
 
-  .shadow-glow {
-    box-shadow: 0 0 30px hsl(160 65% 45% / 0.6);
+  .btn-primary {
+    @apply bg-gradient-to-br from-emerald-400 to-teal-600 text-white cursor-pointer;
   }
 
-  .btn-primary {
-    @apply bg-gradient-to-br from-emerald-400 to-teal-600 text-white;
+  .shadow-glow {
+    box-shadow: 0 0 30px hsl(160 65% 45% / 0.4);
   }
 
   .component {
@@ -149,5 +159,9 @@
 
   .component-dark {
     @apply bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700;
+  }
+
+  .component-dark-2 {
+    @apply bg-gray-50 dark:bg-gray-950 border-gray-200  dark:border-gray-800;
   }
 }
