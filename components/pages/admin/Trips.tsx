@@ -1,12 +1,16 @@
 "use client"
 
 import z from "zod";
-import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
+import { useState, useEffect } from "react";
 import { DateRange } from "react-day-picker";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { editTripSchema, formatDate } from "@/lib/utils";
+import {
+    editTripSchema,
+    formatDate,
+    getStatusColor
+} from "@/lib/utils";
 import {
     useDebounceValue,
     useIntersectionObserver
@@ -32,7 +36,8 @@ import {
     Pencil,
     Search,
     Trash2,
-    Calendar as CalendarIcon
+    Calendar as CalendarIcon,
+    MapPin
 } from "lucide-react";
 import {
     Form,
@@ -55,14 +60,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
 
 type Trip = {
     id: string;
@@ -126,106 +123,178 @@ export const Trips = () => {
 
     return (
         <div>
-            <Toaster richColors />
-            <h1 className="title-text mb-6">Поездки</h1>
+            <Toaster />
+            <h1 className="title-text">Поездки</h1>
+            <p className="subtitle-text mb-6">Мониторинг всех поездок в системе</p>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 my-4">
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Поиск по маршруту, номеру водителя и по имени водителя..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <div className="flex flex-col component border rounded-2xl mt-4 px-6 py-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 my-4">
+                    <div className="relative w-full">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Поиск по маршруту, номеру водителя и по имени водителя..."
+                            className="pl-8 w-full component-dark"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className="component-dark"
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {dateRange?.from
+                                        ? (dateRange.to
+                                            ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
+                                            : format(dateRange.from, "LLL dd, y"))
+                                        : <span>
+                                            Выбрать дату
+                                        </span>}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                className="w-auto p-0"
+                                align="end"
+                            >
+                                <Calendar
+                                    autoFocus
+                                    mode="range"
+                                    defaultMonth={dateRange?.from}
+                                    selected={dateRange}
+                                    onSelect={setDateRange}
+                                    numberOfMonths={2}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="component-dark"
+                                >
+                                    <Filter className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setSort({ sortBy: "departure_ts", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setSort({ sortBy: "departure_ts", sortOrder: "ASC" })}>Сначала старые</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant={"outline"}>
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dateRange?.from
-                                    ? (dateRange.to
-                                        ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
-                                        : format(dateRange.from, "LLL dd, y"))
-                                    : <span>
-                                        Выбрать дату
-                                    </span>}
+
+                <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedTrip(null)}>
+                    {isLoading ? (
+                        <div className="grid-default">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <Skeleton className="h-8 w-full" key={i} />
+                            ))}
+                        </div>
+                    ) : allTrips.length > 0 ? (
+                        <div className="grid-default">
+                            {allTrips.map((trip: any, i: number) => (
+                                <div
+                                    className="flex flex-col gap-4 component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl p-6"
+                                    key={trip.id}
+                                >
+                                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                                        <span className="font-bold text-lg">#{trip.id.substring(0, 6)}</span>
+                                        <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(trip.status)}`}>
+                                            {trip.status}
+                                        </span>
+                                        <time className="text-sm text-muted-foreground">{formatDate(trip.createdAt)}</time>
+                                    </div>
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-4">
+                                        <div className="flex flex-col space-y-4 text-sm">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-muted-foreground">Водитель:</span>
+                                                <span className="font-semibold">{trip.driver.firstName} {trip.driver.lastName}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-muted-foreground">Номер:</span>
+                                                <span>{trip.driver.phoneNumber}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-2 text-base">
+                                                <div className="flex flex-row gap-2">
+                                                    <MapPin className="size-4 text-green-500" />
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-muted-foreground text-sm">Откуда:</span>
+                                                        <span className="font-thin">{trip.fromVillage?.nameRu}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-row gap-2">
+                                                    <MapPin className="size-4 text-red-500" />
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-muted-foreground text-sm">Куда:</span>
+                                                        <span className="font-thin">{trip.toVillage?.nameRu}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center justify-between gap-4 h-full">
+                                            <div className="w-full h-full text-xl font-bold">
+                                                <h1 className="text-center sm:text-right">{Intl.NumberFormat('fr-FR').format(trip.price_per_person)} UZS</h1>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row gap-2 space-x-2">
+                                                <DialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => handleEditClick(trip)}
+                                                    >
+                                                        Редактировать
+                                                        <Pencil className="size" />
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <Button
+                                                    variant="destructive"
+                                                    onClick={() => handleDelete(trip.id)}
+                                                    disabled={isDeleting}
+                                                >
+                                                    Удалить
+                                                    <Trash2 className="size-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center w-full mt-8">
+                            <span className="subtitle-text">Поездки не найдены.</span>
+                        </div>
+                    )}
+                    {hasNextPage && (
+                        <div className="mt-4 flex justify-center">
+                            <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                                {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
                             </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="end"><Calendar autoFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={setDateRange} numberOfMonths={2} /></PopoverContent>
-                    </Popover>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setSort({ sortBy: "departure_ts", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setSort({ sortBy: "departure_ts", sortOrder: "ASC" })}>Сначала старые</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+                        </div>
+                    )}
+
+                    {selectedTrip && (
+                        <DialogContent>
+                            <DialogHeader><DialogTitle>Изменить поездку</DialogTitle></DialogHeader>
+                            <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
+                                    <FormField control={form.control} name="departure_ts" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Время прибытия</FormLabel>
+                                            <FormControl><Input type="Выберите дату" {...field} /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <Button type="submit" disabled={isEditing}>{isEditing ? "Сохраняется..." : "Сохранить"}</Button>
+                                </form>
+                            </Form>
+                        </DialogContent>
+                    )}
+                </Dialog>
             </div>
-
-            <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedTrip(null)}>
-                <div className="border rounded-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Маршрут</TableHead>
-                                <TableHead>Водитель</TableHead>
-                                <TableHead>Номер водителя</TableHead>
-                                <TableHead>Дата прибытия</TableHead>
-                                <TableHead className="text-right">Действия</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                Array.from({ length: 10 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : allTrips.length > 0 ? (
-                                allTrips.map((trip: any) => (
-                                    <TableRow key={trip.id}>
-                                        <TableCell className="font-medium">{trip.fromVillage?.nameRu} → {trip.toVillage?.nameRu}</TableCell>
-                                        <TableCell>{trip.driver.firstName} {trip.driver.lastName}</TableCell>
-                                        <TableCell>{trip.driver.phoneNumber}</TableCell>
-                                        <TableCell>{formatDate(trip.departure_ts)}</TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <DialogTrigger asChild>
-                                                <Button variant="ghost" size="icon" onClick={() => handleEditClick(trip)}><Pencil className="h-4 w-4" /></Button>
-                                            </DialogTrigger>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(trip.id)} disabled={isDeleting}><Trash2 className="h-4 w-4 text-red-500" /></Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow><TableCell colSpan={5} className="h-24 text-center">Поездок не найдено.</TableCell></TableRow>
-                            )}
-                            {hasNextPage && (
-                                <TableRow>
-                                    <TableCell colSpan={5} ref={ref}>
-                                        {isFetchingNextPage && <div className='flex justify-center p-4'><p>Загрузка...</p></div>}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-
-                {selectedTrip && (
-                    <DialogContent>
-                        <DialogHeader><DialogTitle>Изменить поездку</DialogTitle></DialogHeader>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
-                                <FormField control={form.control} name="departure_ts" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Время прибытия</FormLabel>
-                                        <FormControl><Input type="Выберите дату" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <Button type="submit" disabled={isEditing}>{isEditing ? "Сохраняется..." : "Сохранить"}</Button>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                )}
-            </Dialog>
         </div>
     );
 };

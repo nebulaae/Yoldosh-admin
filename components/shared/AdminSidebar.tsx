@@ -103,10 +103,12 @@ export const AdminSidebar = () => {
                             <div>
                                 <SidebarMenuItem>
                                     <SidebarMenuButton asChild className="w-full bg-gray-100 hover:bg-gray-200 border border-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 dark:border-gray-700 cursor-pointer">
-                                        <button className="flex items-center justify-center py-4">
-                                            <Search className="ml-2" />
-                                            <span>Поиск пользователя</span>
-                                        </button>
+                                        <Link href="/admin/users-search">
+                                            <button className="flex items-center justify-center py-4 gap-2 w-full">
+                                                <Search className="ml-2 size-4" />
+                                                <span>Поиск пользователя</span>
+                                            </button>
+                                        </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                                 <Separator orientation="horizontal" className="mt-4 " />

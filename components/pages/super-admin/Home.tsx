@@ -27,8 +27,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { useTheme } from 'next-themes';
 
 export const Home = () => {
+    const { theme } = useTheme();
     const { data: superAdmin, isLoading: isAdminLoading, isError: isAdminError } = useGetSuperAdminProfile();
     const { data: stats, isLoading: isStatsLoading, isError: isStatsError } = useGetSuperAdminStats();
 
@@ -59,6 +61,11 @@ export const Home = () => {
             </div>
         );
     }
+
+    const chartColor = theme === 'dark' ? '#A1A1AA' : '#334155'; // zinc-400 and slate-700
+    const barFill = theme === 'dark' ? '#22c55e' : '#16a34a'; // green-500 and green-600
+    const lineStroke = theme === 'dark' ? '#38bdf8' : '#0ea5e9'; // sky-400 and sky-500
+
 
     return (
         <div className="flex flex-col gap-6">
@@ -127,11 +134,16 @@ export const Home = () => {
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={stats.users.growth}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#8884d8" name="Новые пользователи" />
+                                <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "hsl(var(--border))" : "hsl(var(--border))"} />
+                                <XAxis dataKey="date" stroke={chartColor} />
+                                <YAxis stroke={chartColor} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: theme === 'dark' ? 'hsl(var(--background))' : 'hsl(var(--background))',
+                                        borderColor: theme === 'dark' ? 'hsl(var(--border))' : 'hsl(var(--border))'
+                                    }}
+                                />
+                                <Bar dataKey="count" fill={barFill} name="Новые пользователи" />
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -143,11 +155,16 @@ export const Home = () => {
                     <CardContent>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={stats.trips.growth}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" />
-                                <YAxis />
-                                <Tooltip />
-                                <Line type="monotone" dataKey="count" stroke="#82ca9d" name="Новые поездки" />
+                                <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "hsl(var(--border))" : "hsl(var(--border))"} />
+                                <XAxis dataKey="date" stroke={chartColor} />
+                                <YAxis stroke={chartColor} />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: theme === 'dark' ? 'hsl(var(--background))' : 'hsl(var(--background))',
+                                        borderColor: theme === 'dark' ? 'hsl(var(--border))' : 'hsl(var(--border))'
+                                    }}
+                                />
+                                <Line type="monotone" dataKey="count" stroke={lineStroke} name="Новые поездки" />
                             </LineChart>
                         </ResponsiveContainer>
                     </CardContent>

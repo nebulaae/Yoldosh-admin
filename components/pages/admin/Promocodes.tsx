@@ -1,214 +1,178 @@
 "use client"
 
-import { z } from "zod";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
-import { promoCodeGrantSchema } from "@/lib/utils";
+import { z } from "zod";
+import { format } from "date-fns";
 import {
-    useGetAllUsers,
+    useGetUserPromoCodes,
+    useGetGlobalPromoCodes,
     useGrantPromoCode,
     useDeletePromoCode
 } from "@/hooks/adminHooks";
+import { personalPromoCodeSchema, globalPromoCodeSchema, formatDate } from "@/lib/utils";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Trash2 } from "lucide-react";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage
-} from "@/components/ui/form";
-
-type User = {
-    id: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-    promoCode: {
-        id: string;
-        discountPercentage: number;
-    } | null;
-};
-
-type PromoFilter = "all" | "with" | "without"; // ADDED
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Calendar as CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export const Promocodes = () => {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [debouncedSearch] = useDebounceValue(searchTerm, 500);
-    const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [promoFilter, setPromoFilter] = useState<PromoFilter>("all"); // ADDED State for filter
+    const [isPersonalDialogOpen, setIsPersonalDialogOpen] = useState(false);
+    const [isGlobalDialogOpen, setIsGlobalDialogOpen] = useState(false);
 
-    // UPDATED: Filters object now includes role and promocode status
-    const filters = {
-        search: debouncedSearch,
-        role: "Passenger", // Hardcode role to Passenger
-        hasPromoCode: promoFilter === "all" ? undefined : promoFilter === "with",
-    };
-
-    const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllUsers(filters);
-    const { mutate: grantPromoCode, isPending: isGranting } = useGrantPromoCode();
-    const { mutate: deletePromoCode, isPending: isDeleting } = useDeletePromoCode();
-
-    const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.5 });
-
-    const form = useForm<z.infer<typeof promoCodeGrantSchema>>({
-        resolver: zodResolver(promoCodeGrantSchema),
-        defaultValues: { discountPercentage: 10 },
+    const personalForm = useForm<z.infer<typeof personalPromoCodeSchema>>({
+        resolver: zodResolver(personalPromoCodeSchema),
+        defaultValues: { userId: "", discountPercentage: 10 },
     });
 
-    useEffect(() => {
-        if (selectedUser) {
-            form.setValue("userId", selectedUser.id);
-        }
-    }, [selectedUser, form]);
+    const globalForm = useForm<z.infer<typeof globalPromoCodeSchema>>({
+        resolver: zodResolver(globalPromoCodeSchema),
+        defaultValues: { discountPercentage: 10, useAmount: 100 },
+    });
 
-    useEffect(() => {
-        if (isIntersecting && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
+    const { mutate: grantPromoCode, isPending: isGranting } = useGrantPromoCode();
 
-    const onGrantSubmit = (values: z.infer<typeof promoCodeGrantSchema>) => {
-        grantPromoCode(values, {
-            onSuccess: () => setSelectedUser(null),
+    const onPersonalSubmit = (values: z.infer<typeof personalPromoCodeSchema>) => {
+        grantPromoCode({ ...values, type: 'SINGLE_USER' }, {
+            onSuccess: () => {
+                personalForm.reset();
+                setIsPersonalDialogOpen(false);
+            }
         });
     };
 
-    const allUsers = data?.pages.flatMap(page => page.users) ?? [];
+    const onGlobalSubmit = (values: z.infer<typeof globalPromoCodeSchema>) => {
+        grantPromoCode({ ...values, type: 'GLOBAL' }, {
+            onSuccess: () => {
+                globalForm.reset();
+                setIsGlobalDialogOpen(false);
+            }
+        });
+    };
 
     return (
         <div>
-            <Toaster />
+            <Toaster richColors />
             <div className="flex justify-between items-center mb-6">
-                <h1 className="title-text">Промокоды пользователей</h1>
+                <h1 className="title-text">Промокоды</h1>
+                <div className="flex gap-2">
+                    <Dialog open={isPersonalDialogOpen} onOpenChange={setIsPersonalDialogOpen}>
+                        <DialogTrigger asChild><Button>Персональный промокод</Button></DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader><DialogTitle>Выдать персональный промокод</DialogTitle></DialogHeader>
+                            <Form {...personalForm}>
+                                <form onSubmit={personalForm.handleSubmit(onPersonalSubmit)} className="space-y-4">
+                                    <FormField control={personalForm.control} name="userId" render={({ field }) => (
+                                        <FormItem><FormLabel>ID Пользователя</FormLabel><FormControl><Input placeholder="User ID..." {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={personalForm.control} name="discountPercentage" render={({ field }) => (
+                                        <FormItem><FormLabel>Процент скидки</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField control={personalForm.control} name="expiresAt" render={({ field }) => (
+                                        <FormItem className="flex flex-col"><FormLabel>Срок действия (необязательно)</FormLabel>
+                                            <Popover><PopoverTrigger asChild>
+                                                <FormControl><Button variant={"outline"} className="justify-start text-left font-normal">{field.value ? format(field.value, "PPP") : <span>Выберите дату</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
+                                            </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>
+                                        <FormMessage /></FormItem>
+                                    )} />
+                                    <Button type="submit" disabled={isGranting}>{isGranting ? 'Выдача...' : 'Выдать'}</Button>
+                                </form>
+                            </Form>
+                        </DialogContent>
+                    </Dialog>
+                    <Dialog open={isGlobalDialogOpen} onOpenChange={setIsGlobalDialogOpen}>
+                        <DialogTrigger asChild><Button variant="outline"><PlusCircle className="mr-2 h-4 w-4" />Создать промокод</Button></DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader><DialogTitle>Создать глобальный промокод</DialogTitle></DialogHeader>
+                            <Form {...globalForm}>
+                                <form onSubmit={globalForm.handleSubmit(onGlobalSubmit)} className="space-y-4">
+                                     <FormField control={globalForm.control} name="discountPercentage" render={({ field }) => (
+                                        <FormItem><FormLabel>Процент скидки</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField control={globalForm.control} name="useAmount" render={({ field }) => (
+                                        <FormItem><FormLabel>Количество использований</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <FormField control={globalForm.control} name="expiresAt" render={({ field }) => (
+                                        <FormItem className="flex flex-col"><FormLabel>Срок действия (необязательно)</FormLabel>
+                                            <Popover><PopoverTrigger asChild>
+                                                <FormControl><Button variant={"outline"} className="justify-start text-left font-normal">{field.value ? format(field.value, "PPP") : <span>Выберите дату</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
+                                            </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} /></PopoverContent></Popover>
+                                        <FormMessage /></FormItem>
+                                    )} />
+                                    <Button type="submit" disabled={isGranting}>{isGranting ? 'Создание...' : 'Создать'}</Button>
+                                </form>
+                            </Form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Поиск по имени, фамилии, номеру..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                </div>
-                <Select value={promoFilter} onValueChange={(value) => setPromoFilter(value as PromoFilter)}>
-                    <SelectTrigger className="w-full sm:w-[200px]">
-                        <SelectValue placeholder="Фильтр по промокоду" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Все Пассажиры</SelectItem>
-                        <SelectItem value="with">С промокодом</SelectItem>
-                        <SelectItem value="without">Без промокода</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <Dialog onOpenChange={(isOpen) => !isOpen && setSelectedUser(null)}>
-                <div className="border rounded-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Имя</TableHead>
-                                <TableHead>Фамилия</TableHead>
-                                <TableHead>Телефон</TableHead>
-                                <TableHead>Скидка (%)</TableHead>
-                                <TableHead className="text-right">Действия</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                Array.from({ length: 10 }).map((_, i) => (
-                                    <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
-                                ))
-                            ) : allUsers.length > 0 ? (
-                                allUsers.map((user: User) => (
-                                    <TableRow key={user.id}>
-                                        <TableCell>{user.firstName}</TableCell>
-                                        <TableCell>{user.lastName}</TableCell>
-                                        <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>{user.promoCode?.discountPercentage || 0}%</TableCell>
-                                        <TableCell className="text-right">
-                                            {user.promoCode ? (
-                                                <Button variant="ghost" size="icon" onClick={() => deletePromoCode(user.promoCode!.id)} disabled={isDeleting}>
-                                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                                </Button>
-                                            ) : (
-                                                <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm" onClick={() => setSelectedUser(user)}>Выдать</Button>
-                                                </DialogTrigger>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow><TableCell colSpan={5} className="h-24 text-center">Пользователи не найдены.</TableCell></TableRow>
-                            )}
-                            {hasNextPage && (
-                                <TableRow>
-                                    <TableCell colSpan={5} ref={ref}>
-                                        {isFetchingNextPage && <div className='flex justify-center p-4'><p>Загрузка...</p></div>}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-                {selectedUser && (
-                    <DialogContent>
-                        <DialogHeader><DialogTitle>Выдать промокод для {selectedUser.firstName}</DialogTitle></DialogHeader>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onGrantSubmit)} className="space-y-4">
-                                <FormField control={form.control} name="discountPercentage" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Процент скидки (1-30%)</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                min="1"
-                                                max="30"
-                                                {...field}
-                                                value={field.value ?? ""}
-                                                onChange={e => {
-                                                    const val = e.target.value === "" ? "" : Number(e.target.value);
-                                                    field.onChange(val);
-                                                }}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <Button type="submit" disabled={isGranting}>{isGranting ? 'Выдача...' : 'Выдать промокод'}</Button>
-                            </form>
-                        </Form>
-                    </DialogContent>
-                )}
-            </Dialog>
+            <Tabs defaultValue="personal" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="personal">Персональные</TabsTrigger>
+                    <TabsTrigger value="global">Глобальные</TabsTrigger>
+                </TabsList>
+                <TabsContent value="personal"><PromoCodesTable type="SINGLE_USER" /></TabsContent>
+                <TabsContent value="global"><PromoCodesTable type="GLOBAL" /></TabsContent>
+            </Tabs>
         </div>
     );
 };
+
+const PromoCodesTable = ({ type }: { type: 'SINGLE_USER' | 'GLOBAL' }) => {
+    const { data: promoCodes, isLoading } = type === 'SINGLE_USER' ? useGetUserPromoCodes() : useGetGlobalPromoCodes();
+    const { mutate: deletePromoCode, isPending: isDeleting } = useDeletePromoCode();
+
+    return (
+        <div className="border rounded-lg mt-4">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Код</TableHead>
+                        {type === 'SINGLE_USER' && <TableHead>Пользователь</TableHead>}
+                        <TableHead>Скидка (%)</TableHead>
+                        <TableHead>Срок действия</TableHead>
+                        {type === 'GLOBAL' && <TableHead>Осталось</TableHead>}
+                        <TableHead>Статус</TableHead>
+                        <TableHead className="text-right">Действия</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {isLoading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}><TableCell colSpan={type === 'SINGLE_USER' ? 6 : 5}><Skeleton className="h-8 w-full" /></TableCell></TableRow>
+                        ))
+                    ) : promoCodes && promoCodes.length > 0 ? (
+                        promoCodes.map((pc: any) => (
+                            <TableRow key={pc.id}>
+                                <TableCell className="font-mono">{pc.code}</TableCell>
+                                {type === 'SINGLE_USER' && <TableCell>{pc.user?.firstName || pc.userId.substring(0,8)}</TableCell>}
+                                <TableCell>{pc.discountPercentage}%</TableCell>
+                                <TableCell>{pc.expiresAt ? formatDate(pc.expiresAt) : 'Бессрочный'}</TableCell>
+                                {type === 'GLOBAL' && <TableCell>{pc.useAmount ?? '∞'}</TableCell>}
+                                <TableCell>{pc.isActive ? <span className="text-green-500">Активен</span> : <span className="text-red-500">Неактивен</span>}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" onClick={() => deletePromoCode(pc.id)} disabled={isDeleting}>
+                                        <Trash2 className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow><TableCell colSpan={type === 'SINGLE_USER' ? 6 : 5} className="h-24 text-center">Промокоды не найдены.</TableCell></TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
+

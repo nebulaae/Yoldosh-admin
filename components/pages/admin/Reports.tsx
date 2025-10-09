@@ -50,13 +50,6 @@ import {
     FormMessage
 } from "@/components/ui/form";
 import {
-    Table,
-    TableBody,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
-import {
     Dialog,
     DialogContent,
     DialogHeader,
@@ -102,12 +95,12 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
 
     const form = useForm<z.infer<typeof banUserSchema>>({
         resolver: zodResolver(banUserSchema),
-        defaultValues: { reason: "", durationInDays: undefined },
+        defaultValues: { reason: "", durationInDays: undefined, userId: "" },
     });
 
     useEffect(() => {
         if (selectedReport) {
-            form.setValue("reportId", selectedReport.id);
+            form.setValue("userId", selectedReport.reportedUser.id);
         }
     }, [selectedReport, form]);
 
@@ -137,7 +130,10 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                     <div className="flex items-center gap-2">
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button variant={"outline"}>
+                                <Button
+                                    variant={"outline"}
+                                    className="component-dark"
+                                >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
                                     {dateRange?.from ? (
                                         dateRange.to ? (
@@ -150,7 +146,10 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                                     )}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="end">
+                            <PopoverContent
+                                className="w-auto p-0"
+                                align="end"
+                            >
                                 <Calendar
                                     autoFocus
                                     mode="range"
@@ -164,7 +163,13 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="component-dark"
+                                >
+                                    <Filter className="h-4 w-4" />
+                                </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
@@ -181,7 +186,6 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                     </div>
                 ) : allReports.length > 0 ? (
                     <div className="grid-default">
-
                         {data!.pages.map((page, i) => (
                             <React.Fragment key={i}>
                                 {page.reports.map((report: Report, j: number) => (
@@ -190,7 +194,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                                         key={report.id}
                                     >
                                         <div className="flex flex-col sm:flex-row items-center gap-4">
-                                            <span className="font-bold text-lg">#{j}</span>
+                                            <span className="font-bold text-lg">#{report.id.substring(0, 6)}</span>
                                             <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
                                                 {report.status}
                                             </span>

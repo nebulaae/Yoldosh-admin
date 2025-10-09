@@ -23,10 +23,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Search,
     Filter,
     Calendar as CalendarIcon,
+    Bell,
 } from "lucide-react";
 import {
     Popover,
@@ -40,14 +42,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
 import {
     Form,
     FormControl,
@@ -87,7 +81,7 @@ export const Notifications = () => {
 
     const form = useForm<z.infer<typeof globalNotificationSchema>>({
         resolver: zodResolver(globalNotificationSchema),
-        defaultValues: { content: "", type: "general" },
+        defaultValues: { content: "", type: "general", targetAudience: "ALL" },
     });
 
     const onSubmit = (values: z.infer<typeof globalNotificationSchema>) => {
@@ -105,10 +99,10 @@ export const Notifications = () => {
     return (
         <div>
             <Toaster />
-            <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-8">
-                <div className="w-full">
-                    <h1 className="title-text mb-2">Уведомление</h1>
-                    <p className="text-sm text-gray-500 mb-6">Отправка push-уведомлений пользователям.</p>
+            <h1 className="title-text mb-2">Уведомления</h1>
+            <p className="text-sm text-gray-500">Отправка push-уведомлений пользователям.</p>
+            <div className="flex flex-col lg:flex-row items-start justify-between w-full gap-2 sm:gap-8 mt-4">
+                <div className="w-full h-full">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="component space-y-6 p-6 rounded-lg border">
                             <h1 className="text-xl font-bold">Создать уведомление</h1>
@@ -130,16 +124,34 @@ export const Notifications = () => {
                                     <FormLabel>Тип уведомления</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                         <FormControl>
-                                            <SelectTrigger className="component-dark">
-                                                <SelectValue placeholder="Выберите тип" className="component-dark" />
+                                            <SelectTrigger className="component-dark w-full">
+                                                <SelectValue placeholder="Выберите тип" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="general">General</SelectItem>
-                                            <SelectItem value="trips">Trips</SelectItem>
-                                            <SelectItem value="promotionAndDiscounts">Promotions</SelectItem>
-                                            <SelectItem value="newsAndAgreement">News</SelectItem>
-                                            <SelectItem value="messages">Messages</SelectItem>
+                                            <SelectItem value="general">Общее</SelectItem>
+                                            <SelectItem value="trips">Поездки</SelectItem>
+                                            <SelectItem value="promotionAndDiscounts">Акции и скидки</SelectItem>
+                                            <SelectItem value="newsAndAgreement">Новости и соглашения</SelectItem>
+                                            <SelectItem value="messages">Сообщения</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                            <FormField control={form.control} name="targetAudience" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Аудитория</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="component-dark w-full">
+                                                <SelectValue placeholder="Выберите аудиторию" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="ALL">Все</SelectItem>
+                                            <SelectItem value="DRIVERS">Водители</SelectItem>
+                                            <SelectItem value="PASSENGERS">Пассажиры</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -154,28 +166,49 @@ export const Notifications = () => {
                         </form>
                     </Form>
                 </div>
-                <div className="w-full">
-                    <h2 className="title-text mb-6">История отправленных</h2>
-
-                    <div className="flex justify-between items-center gap-2 my-4">
-                        <div className="relative w-full max-w-sm">
+                <div className="w-full component border rounded-lg p-6">
+                    <h1 className="text-xl font-bold">История уведомлений</h1>
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-2 my-4">
+                        <div className="relative w-full">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Поиск по содержанию..." className="pl-8" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                            <Input
+                                placeholder="Поиск по содержанию..."
+                                className="pl-8 component-dark"
+                                value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
                         <div className="flex items-center gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant={"outline"}>
+                                    <Button variant={"outline"} className="component-dark ">
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {dateRange?.from ? (dateRange.to ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}` : format(dateRange.from, "LLL dd, y")) : <span>Выберите дату</span>}
+                                        {dateRange?.from
+                                            ? (dateRange.to ? `${format(dateRange.from, "LLL dd, y")} - ${format(dateRange.to, "LLL dd, y")}`
+                                                : format(dateRange.from, "LLL dd, y"))
+                                            : <span>Выберите дату</span>}
                                     </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="end">
-                                    <Calendar autoFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
+                                    <Calendar
+                                        autoFocus
+                                        mode="range"
+                                        defaultMonth={dateRange?.from}
+                                        selected={dateRange}
+                                        onSelect={setDateRange}
+                                        numberOfMonths={2}
+                                    />
                                 </PopoverContent>
                             </Popover>
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button variant="outline" size="icon"><Filter className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="component-dark"
+                                    >
+                                        <Filter className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "DESC" })}>Сначала новые</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setSort({ sortBy: "createdAt", sortOrder: "ASC" })}>Сначала старые</DropdownMenuItem>
@@ -184,48 +217,57 @@ export const Notifications = () => {
                         </div>
                     </div>
 
-                    <div className="border rounded-lg component">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Сообщение</TableHead>
-                                    <TableHead>Тип</TableHead>
-                                    <TableHead>Дата</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {isLoading ? (
-                                    Array.from({ length: 5 }).map((_, i) => (
-                                        <TableRow key={i}>
-                                            <TableCell colSpan={3}><Skeleton className="h-8 w-full" />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : allNotifications.length > 0 ? (
-                                    allNotifications.map((notif: any) => (
-                                        <TableRow key={notif.createdAt}>
-                                            <TableCell className="font-medium">{notif.message}</TableCell>
-                                            <TableCell><span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(notif.type)}`}>{notif.type}</span></TableCell>
-                                            <TableCell>{formatDate(notif.createdAt)}</TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow><TableCell colSpan={3} className="text-center h-24">Уведомлений пока нет.</TableCell></TableRow>
-                                )}
-                                {hasNextPage && (
-                                    <TableRow>
-                                        <TableCell colSpan={4} ref={ref}>
-                                            {isFetchingNextPage && (
-                                                <div className='flex justify-center items-center p-4'>
-                                                    <p>Загрузка...</p>
+                    <ScrollArea className="flex-1 h-full w-full">
+                        {isLoading ? (
+                            <div className="flex flex-col gap-2">
+                                {Array.from({ length: 10 }).map((_, i) => (
+                                    <Skeleton className="h-8 w-full" key={i} />
+                                ))}
+                            </div>
+                        ) : allNotifications.length > 0 ? (
+                            <div className="flex flex-col gap-4">
+                                {allNotifications.map((notif: any) => (
+                                    <div
+                                        className="flex flex-col gap-4 component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl p-6"
+                                        key={notif.createdAt}
+                                    >
+                                        <div className="flex flex-row items-start justify-start gap-4">
+                                            <div className="bg-gradient-to-br from-emerald-400 to-teal-700 text-white rounded-xl p-2">
+                                                <Bell className="size-6" />
+                                            </div>
+                                            <div className="flex flex-col items-start justify-start gap-2">
+                                                <span className="font-bold">{notif.message}</span>
+                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(notif.type)}`}>
+                                                    {notif.type}
+                                                </span>
+                                                <div className="mt-1 text-sm">
+                                                    <span className={`px-2 py-1 rounded-full text-xs mr-2 ${getStatusColor(notif.targetAudience)}`}>{notif.targetAudience}</span>
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {Intl.NumberFormat().format(notif.receivedAmount)} получател
+                                                        {notif.receivedAmount === 1
+                                                            ? 'ь'
+                                                            : (notif.receivedAmount > 1 && notif.receivedAmount < 5 ? 'я' : 'ей')}
+                                                    </span>
                                                 </div>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                                <span className="text-muted-foreground text-xs">{formatDate(notif.createdAt)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center w-full mt-8">
+                                <span className="subtitle-text">Уведомлений пока нет.</span>
+                            </div>
+                        )}
+                        {hasNextPage && (
+                            <div className="mt-4 flex justify-center">
+                                <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                                    {isFetchingNextPage ? 'Загрузка...' : 'Загрузить еще'}
+                                </Button>
+                            </div>
+                        )}
+                    </ScrollArea>
                 </div>
             </div>
         </div>

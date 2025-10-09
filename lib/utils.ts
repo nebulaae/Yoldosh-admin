@@ -36,7 +36,7 @@ export const updateReportStatusSchema = z.object({
 
 // Ban User Schema
 export const banUserSchema = z.object({
-  reportId: z.string().min(1, "Report ID is required"),
+  userId: z.string().min(1, "User ID is required"),
   reason: z
     .string()
     .min(10, "Причина бана должна быть не менее 10 символов")
@@ -49,17 +49,15 @@ export const banUserSchema = z.object({
     .nullable(),
 });
 
+
 // Global Notification Schema
 export const globalNotificationSchema = z.object({
-  content: z
-    .string()
-    .min(10, "Сообщение должно быть не менее 10 символов.")
-    .max(1000, "Сообщение не должно превышать 1000 символов."),
-  type: z.enum(["trips", "newsAndAgreement", "promotionAndDiscounts", "messages", "general"]),
+    content: z.string().min(1, "Содержание обязательно"),
+    type: z.enum(["general", "trips", "promotionAndDiscounts", "newsAndAgreement", "messages"]),
+    targetAudience: z.enum(["ALL", "DRIVERS", "PASSENGERS"]),
 });
 
-
-// Car Model Schema - CORRECTED
+// Car Model Schema
 export const carModelSchema = z.object({
   make: z.string().min(1, "Производитель обязателен").max(50),
   model: z.string().min(1, "Модель обязательна").max(50),
@@ -96,11 +94,19 @@ export const createAdminSchema = z.object({
     .max(50, "Last name must not exceed 50 characters"),
 });
 
-// Promocode Grant Schema
-export const promoCodeGrantSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
-  discountPercentage: z.number().min(1, "Скидка должна быть не менее 1%").max(30, "Скидка не может превышать 30%"),
+// Promocode Schemas
+export const personalPromoCodeSchema = z.object({
+  userId: z.string(),
+  discountPercentage: z.number().min(1, "Скидка должна быть не менее 1%").max(100, "Скидка не может превышать 100%"),
+  expiresAt: z.date().optional(),
 });
+
+export const globalPromoCodeSchema = z.object({
+  discountPercentage: z.number().min(1, "Скидка должна быть не менее 1%").max(100, "Скидка не может превышать 100%"),
+  useAmount: z.number().min(1, "Количество использований должно быть не менее 1"),
+  expiresAt: z.date().optional(),
+});
+
 
 // Utility function to format error messages
 export const formatErrorMessage = (error: any): string => {
@@ -127,19 +133,26 @@ export const formatDate = (dateString: string): string => {
 // Status color utilities
 export const getStatusColor = (status: string): string => {
   const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-200 text-yellow-800",
-    VERIFIED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-200/20 text-red-800 dark:bg-red-400/20 dark:text-red-500",
-    RESOLVED: "bg-blue-100 text-blue-800",
-    CONFIRMED: "bg-green-100 text-green-800",
-    CANCELLED: "bg-red-100 text-red-800",
-    COMPLETED: "bg-gray-100 text-gray-800",
+    PENDING: "bg-yellow-200/20 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400",
+    VERIFIED: "bg-green-200/20 text-green-800 dark:bg-green-800/20 dark:text-green-400",
+    REJECTED: "bg-red-200/20 text-red-800 dark:bg-red-800/20 dark:text-red-400",
+    RESOLVED: "bg-blue-200/20 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400",
+    CONFIRMED: "bg-green-200/20 text-green-800 dark:bg-green-800/20 dark:text-green-400",
+    CANCELLED: "bg-red-200/20 text-red-800 dark:bg-red-800/20 dark:text-red-400",
+    COMPLETED: "bg-green-200/20 text-green-800 dark:bg-green-800/20 dark:text-green-400",
     // Notification Types from enum
-    TRIPS: "bg-sky-100 text-sky-800",
-    NEWS_AND_AGREEMENT: "bg-indigo-100 text-indigo-800",
-    PROMOTION_AND_DISCOUNTS: "bg-purple-100 text-purple-800",
-    MESSAGES: "bg-pink-100 text-pink-800",
-    GENERAL: "bg-gray-100 text-gray-800",
+    trips: "bg-sky-200/20 text-sky-800 dark:bg-sky-800/20 dark:text-sky-400",
+    newsAndAgreement: "bg-indigo-200/20 text-indigo-800 dark:bg-indigo-800/20 dark:text-indigo-400",
+    promotionAndDiscounts: "bg-purple-200/20 text-purple-800 dark:bg-purple-800/20 dark:text-purple-400",
+    messages: "bg-pink-200/20 text-pink-800 dark:bg-pink-800/20 dark:text-pink-400",
+    general: "bg-amber-200/20 text-amber-800 dark:bg-amber-800/20 dark:text-amber-400",
+    // Trips
+    CREATED: "bg-blue-200/20 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400",
+    IN_PROGRESS: "bg-yellow-200/20 text-yellow-800 dark:bg-yellow-800/20 dark:text-yellow-400",
+    // Auditory types
+    DRIVERS: "bg-blue-200/20 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400",
+    PASSENGERS: "bg-red-200/20 text-red-800 dark:bg-red-800/20 dark:text-red-400",
+    ALL: "bg-cyan-200/20 text-cyan-800 dark:bg-cyan-800/20 dark:text-cyan-400"
   };
   return statusColors[status] || "bg-gray-100 text-gray-800";
 };
@@ -157,6 +170,7 @@ export const queryKeys = {
   admin: {
     all: ['admin'] as const,
     profile: () => [...queryKeys.admin.all, 'profile'] as const,
+    stats: () => [...queryKeys.admin.all, 'stats'] as const,
     driverApplications: (filters: any) => [...queryKeys.admin.all, 'driver-applications', filters] as const,
     reports: (filters: any) => [...queryKeys.admin.all, 'reports', filters] as const,
     trips: (filters: any = {}) => [...queryKeys.admin.all, 'trips', filters] as const,
@@ -164,7 +178,9 @@ export const queryKeys = {
     carModels: (filters: any = {}) => [...queryKeys.admin.all, 'car-models', filters] as const,
     restrictedWords: (filters: any = {}) => [...queryKeys.admin.all, 'restricted-words', filters] as const,
     users: (filters: any = {}) => [...queryKeys.admin.all, 'users', filters] as const,
-    promoCodes: (filters: any = {}) => [...queryKeys.admin.all, 'promo-codes', filters] as const,
+    userDetails: (userId: string) => [...queryKeys.admin.all, 'users', userId] as const,
+    searchUsers: (query: string) => [...queryKeys.admin.all, 'users', 'search', query] as const,
+    promoCodes: (type: string) => [...queryKeys.admin.all, 'promo-codes', type] as const,
   },
   superAdmin: {
     all: ['super-admin'] as const,
@@ -174,3 +190,4 @@ export const queryKeys = {
     logs: (adminId: string, filters: any) => [...queryKeys.superAdmin.all, 'logs', adminId, filters] as const,
   },
 } as const;
+

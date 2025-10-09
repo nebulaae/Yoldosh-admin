@@ -12,8 +12,9 @@ import {
     carModelSchema,
     editTripSchema,
     globalNotificationSchema,
+    globalPromoCodeSchema,
     loginSchema,
-    promoCodeGrantSchema,
+    personalPromoCodeSchema,
     queryKeys,
     updateApplicationStatusSchema,
     updateReportStatusSchema,
@@ -51,10 +52,20 @@ export const useGetAdminProfile = (enabled: boolean = true) => {
         queryKey: queryKeys.admin.profile(),
         queryFn: async () => {
             const { data } = await api.get("/admin/me");
-            return data.data; // Backend nests data
+            return data.data;
         },
-        retry: false, // Don't retry on auth errors
+        retry: false,
         enabled,
+    });
+};
+
+export const useGetAdminStats = () => {
+    return useQuery({
+        queryKey: queryKeys.admin.stats(),
+        queryFn: async () => {
+            const { data } = await api.get("/admin/stats");
+            return data.data;
+        }
     });
 };
 
@@ -127,21 +138,62 @@ export const useUpdateReportStatus = () => {
     });
 };
 
+// Users, Search, Ban
+export const useGetAllUsers = (filters: { [key: string]: any }) => {
+    return useInfiniteQuery({
+        queryKey: queryKeys.admin.users(filters),
+        queryFn: async ({ pageParam = 1 }) => {
+            const { data } = await api.get("/admin/users", {
+                params: { ...filters, page: pageParam, limit: 12 }
+            });
+            return data.data;
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+        }
+    });
+};
+
+
+export const useSearchUsers = (query: string) => {
+    return useQuery({
+        queryKey: queryKeys.admin.searchUsers(query),
+        queryFn: async () => {
+            const { data } = await api.get('/admin/users/search', { params: { query } });
+            return data.data;
+        },
+        enabled: !!query && query.length > 2,
+    });
+};
+
+export const useGetUserDetails = (userId: string) => {
+    return useQuery({
+        queryKey: queryKeys.admin.userDetails(userId),
+        queryFn: async () => {
+            const { data } = await api.get(`/admin/users/${userId}`);
+            return data.data;
+        },
+        enabled: !!userId,
+    });
+};
+
 export const useBanUser = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (values: z.infer<typeof banUserSchema>) => {
-            await api.post(`/admin/reports/${values.reportId}/ban`, {
+            await api.post(`/admin/users/${values.userId}/ban`, {
                 reason: values.reason,
                 durationInDays: values.durationInDays,
             });
         },
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             toast.success("Пользователь успешно забанен");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.reports({}) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetails(variables.userId) });
         },
     });
 };
+
 
 // Trips
 export const useGetTrips = (filters: { [key: string]: any }) => {
@@ -240,6 +292,19 @@ export const useCreateCarModel = () => {
     });
 };
 
+export const useUpdateCarModel = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, ...values }: z.infer<typeof carModelSchema> & { id: number }) => {
+            await api.patch(`/admin/car-models/${id}`, values);
+        },
+        onSuccess: () => {
+            toast.success("Модель машины успешно обновлена");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.carModels({}) });
+        }
+    })
+}
+
 export const useDeleteCarModel = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -296,34 +361,39 @@ export const useDeleteRestrictedWord = () => {
     });
 }
 
-// Users for Promocodes
-export const useGetAllUsers = (filters: { [key: string]: any }) => {
-    return useInfiniteQuery({
-        // The key now includes all filters to ensure unique queries
-        queryKey: queryKeys.admin.users(filters),
-        queryFn: async ({ pageParam = 1 }) => {
-            const { data } = await api.get("/admin/users", {
-                // Pass all filters to the API
-                params: { ...filters, page: pageParam }
-            });
-            return data.data;
-        },
-        initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-            return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
+// Promocodes
+export const useGetUserPromoCodes = () => {
+    return useQuery({
+        queryKey: queryKeys.admin.promoCodes('user'),
+        queryFn: async () => {
+            const { data } = await api.get("/admin/user-promocodes");
+            return data.data.promoCodes;
         }
     });
 };
 
+export const useGetGlobalPromoCodes = () => {
+    return useQuery({
+        queryKey: queryKeys.admin.promoCodes('global'),
+        queryFn: async () => {
+            const { data } = await api.get("/admin/promocodes");
+            return data.data.promoCodes;
+        }
+    });
+};
+
+
+type GrantPromoCodePayload = (z.infer<typeof personalPromoCodeSchema> & { type: 'SINGLE_USER' }) | (z.infer<typeof globalPromoCodeSchema> & { type: 'GLOBAL' });
 export const useGrantPromoCode = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (values: z.infer<typeof promoCodeGrantSchema>) => {
-            await api.post(`/admin/promocodes/${values.userId}`, { discountPercentage: values.discountPercentage });
+        mutationFn: async (values: GrantPromoCodePayload) => {
+            await api.post(`/admin/promocodes`, values);
         },
         onSuccess: () => {
-            toast.success("Промокод успешно выдан");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.users({}) });
+            toast.success("Промокод успешно создан");
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes('user') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes('global') });
         },
     });
 };
@@ -336,7 +406,9 @@ export const useDeletePromoCode = () => {
         },
         onSuccess: () => {
             toast.success("Промокод успешно удален");
-            queryClient.invalidateQueries({ queryKey: queryKeys.admin.users({}) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes('user') });
+            queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes('global') });
         }
     });
 };
+

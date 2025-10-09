@@ -1,7 +1,7 @@
 "use client"
 
 import { z } from "zod";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import { carModelSchema } from "@/lib/utils";
@@ -10,7 +10,8 @@ import { useIntersectionObserver } from "usehooks-ts";
 import {
     useCreateCarModel,
     useDeleteCarModel,
-    useGetCarModels
+    useGetCarModels,
+    useUpdateCarModel
 } from "@/hooks/adminHooks";
 
 import { Input } from "@/components/ui/input";
@@ -41,33 +42,63 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog";
 
+type CarModel = {
+    id: number;
+    make: string;
+    model: string;
+    seats_std: number;
+}
+
 export const CarModels = () => {
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedModel, setSelectedModel] = useState<CarModel | null>(null);
+
     const { mutate: createCarModel, isPending: isCreating } = useCreateCarModel();
+    const { mutate: updateCarModel, isPending: isUpdating } = useUpdateCarModel();
     const { mutate: deleteCarModel, isPending: isDeleting } = useDeleteCarModel();
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetCarModels({});
 
-    const { ref, isIntersecting } = useIntersectionObserver({
-        threshold: 0.5,
-    });
+    const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.5 });
 
     const form = useForm<z.infer<typeof carModelSchema>>({
         resolver: zodResolver(carModelSchema),
-        defaultValues: {
-            make: "",
-            model: "",
-            seats_std: 0,
-        },
+        defaultValues: { make: "", model: "", seats_std: 0 },
     });
 
     const onSubmit = (values: z.infer<typeof carModelSchema>) => {
-        createCarModel(values, {
-            onSuccess: () => {
-                form.reset();
-                setIsDialogOpen(false);
-            },
-        });
+        if (selectedModel) { // Update
+            updateCarModel({ ...values, id: selectedModel.id }, {
+                onSuccess: () => {
+                    setIsEditDialogOpen(false);
+                    setSelectedModel(null);
+                }
+            })
+        } else { // Create
+            createCarModel(values, {
+                onSuccess: () => {
+                    form.reset();
+                    setIsCreateDialogOpen(false);
+                },
+            });
+        }
     };
+
+    const handleEditClick = (model: CarModel) => {
+        setSelectedModel(model);
+        form.reset({
+            make: model.make,
+            model: model.model,
+            seats_std: model.seats_std,
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleCloseEditDialog = () => {
+        setIsEditDialogOpen(false);
+        setSelectedModel(null);
+        form.reset();
+    }
 
     useEffect(() => {
         if (isIntersecting && hasNextPage && !isFetchingNextPage) {
@@ -75,78 +106,50 @@ export const CarModels = () => {
         }
     }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+    const renderForm = (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField control={form.control} name="make" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Производитель</FormLabel>
+                        <FormControl><Input placeholder="e.g., Chevrolet" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="model" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Модель</FormLabel>
+                        <FormControl><Input placeholder="e.g., Cobalt" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={form.control} name="seats_std" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Количество мест</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 4" {...field} onChange={e => field.onChange(Number(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <Button type="submit" disabled={isCreating || isUpdating} className="btn-primary shadow-glow">
+                    {isCreating ? "Добавление..." : isUpdating ? "Сохранение..." : selectedModel ? "Сохранить" : "Добавить"}
+                </Button>
+            </form>
+        </Form>
+    );
+
     return (
         <div>
             <Toaster richColors />
             <div className="flex justify-between items-center mb-6">
                 <h1 className="title-text">Модели Машин</h1>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="btn-primary shadow-glow">Добавить модель</Button>
-                    </DialogTrigger>
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                    <DialogTrigger asChild><Button className="btn-primary shadow-glow">Добавить модель</Button></DialogTrigger>
                     <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>
-                                Добавить новую модель машины
-                            </DialogTitle>
-                        </DialogHeader>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField control={form.control} name="make" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Производитель</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="e.g., Chevrolet"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <FormField control={form.control} name="model" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Модель</FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="e.g., Cobalt"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                <FormField
-                                    control={form.control}
-                                    name="seats_std"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Количество мест</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="number"
-                                                    placeholder="e.g., 4"
-                                                    value={field.value === 0 ? "" : field.value}
-                                                    min={1}
-                                                    onChange={e => {
-                                                        const value = e.target.value.replace(/^0+/, "");
-                                                        field.onChange(value === "" ? 0 : Number(value));
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button
-                                    type="submit"
-                                    disabled={isCreating}
-                                    className="btn-primary shadow-glow"
-                                >
-                                    {isCreating ? "Добавление..." : "Добавить"}
-                                </Button>
-                            </form>
-                        </Form>
+                        <DialogHeader><DialogTitle>Добавить новую модель машины</DialogTitle></DialogHeader>
+                        {renderForm}
                     </DialogContent>
                 </Dialog>
             </div>
@@ -155,10 +158,10 @@ export const CarModels = () => {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="text-muted-foreground">Производитель</TableHead>
-                            <TableHead className="text-muted-foreground">Модель</TableHead>
-                            <TableHead className="text-muted-foreground">Места</TableHead>
-                            <TableHead className="text-right text-muted-foreground">Действия</TableHead>
+                            <TableHead>Производитель</TableHead>
+                            <TableHead>Модель</TableHead>
+                            <TableHead>Места</TableHead>
+                            <TableHead className="text-right">Действия</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -168,22 +171,20 @@ export const CarModels = () => {
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                                    <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                                    <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
                                 </TableRow>
                             ))
-                        ) : data!.pages.flatMap(page => page.cars).length > 0 ? (
-                            data!.pages.flatMap((page) => page.cars.map((model: any) => (
+                        ) : (data?.pages?.flatMap(page => page.cars ?? []).length ?? 0) > 0 ? (
+                            data!.pages.flatMap((page) => page.cars.map((model: CarModel) => (
                                 <TableRow key={model.id}>
                                     <TableCell>{model.make}</TableCell>
                                     <TableCell>{model.model}</TableCell>
                                     <TableCell>{model.seats_std}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            disabled={isDeleting}
-                                            onClick={() => deleteCarModel(model.id)}
-                                        >
+                                    <TableCell className="text-right space-x-2">
+                                        <Button variant="ghost" size="icon" onClick={() => handleEditClick(model)}>
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" disabled={isDeleting} onClick={() => deleteCarModel(model.id.toString())}>
                                             <Trash2 className="h-4 w-4 text-red-500" />
                                         </Button>
                                     </TableCell>
@@ -191,23 +192,26 @@ export const CarModels = () => {
                             )))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24">Модели машин не найдены.</TableCell>
+                                <TableCell colSpan={4} className="text-center h-24">Модели машин не найдены.</TableCell>
                             </TableRow>
                         )}
                         {hasNextPage && (
                             <TableRow>
                                 <TableCell colSpan={4} ref={ref}>
-                                    {isFetchingNextPage && (
-                                        <div className='flex justify-center items-center p-4'>
-                                            <p>Загрузка...</p>
-                                        </div>
-                                    )}
+                                    {isFetchingNextPage && <div className='flex justify-center p-4'><p>Загрузка...</p></div>}
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
             </div>
+
+            <Dialog open={isEditDialogOpen} onOpenChange={handleCloseEditDialog}>
+                <DialogContent>
+                    <DialogHeader><DialogTitle>Редактировать модель машины</DialogTitle></DialogHeader>
+                    {renderForm}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
