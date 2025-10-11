@@ -1,6 +1,7 @@
-"use client";
+"use client"
 
 import Link from "next/link";
+import Image from "next/image";
 
 import { useState } from "react";
 import { Car, Phone, Search, User } from "lucide-react";
@@ -10,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetAllUsers } from "@/hooks/adminHooks";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 type User = {
   id: string;
@@ -43,14 +46,16 @@ export const UsersSearch = () => {
         <p className="subtitle-text">Найдите пользователя и просмотрите всю информацию о нем</p>
       </div>
 
-      <div className="relative w-full max-w-lg">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          placeholder="Поиск по имени, фамилии, номеру телефона..."
-          className="pl-10 h-12"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="component border rounded-lg p-6">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Поиск по имени, фамилии, номеру телефона..."
+            className="component-dark pl-10 h-10 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       </div>
 
       {isLoading && (
@@ -65,38 +70,48 @@ export const UsersSearch = () => {
 
       {!isLoading && users && users.length > 0 && (
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="flex items-center justify-between w-full">
+            <h1 className="text-lg sm:text-xl font-semibold">Недавние пользователи</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Нажмите на карточку для просмотра</p>
+          </div>
+          <div className="grid-4 mt-4">
             {users.map((user: User) => (
               <Link href={`/admin/users-search/${user.id}`} key={user.id}>
-                <Card className="hover:border-primary transition-colors cursor-pointer dark:bg-slate-900 h-full flex flex-col">
-                  <CardHeader className="items-center text-center">
+                <Card className="flex flex-col gap-4 component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl p-6 shadow-lg">
+                  <CardHeader className="flex flex-col justify-center items-center text-center">
                     <div className="relative">
                       {user.avatar ? (
-                        <img
+                        <Image
                           src={user.avatar}
                           alt={`${user.firstName} ${user.lastName}`}
-                          className="w-20 h-20 rounded-full object-cover"
+                          className="w-16 h-16 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center">
-                          <User className="w-10 h-10 text-muted-foreground" />
+                        <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center">
+                          <User className="w-8 h-8 text-white" />
                         </div>
                       )}
                       {user.isBanned && (
-                        <div className="absolute bottom-0 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 text-xs leading-none">
+                        <div className="absolute bottom-0 -right-2 bg-destructive text-destructive-foreground text-white rounded-full px-2 py-1 text-xs leading-none">
                           Заб.
                         </div>
                       )}
                     </div>
-                    <CardTitle>
-                      {user.firstName} {user.lastName}
+                    <CardTitle className="mt-2">
+                      <span className="font-bold">{user.firstName} {user.lastName}</span>
                     </CardTitle>
                     <p className="font-mono text-xs text-muted-foreground">ID: {user.id.substring(0, 8)}</p>
                   </CardHeader>
+                  <Separator orientation="horizontal" />
                   <CardContent className="text-center text-sm text-muted-foreground space-y-2 flex-grow flex flex-col justify-center">
                     <div className="flex items-center justify-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      <span>{user.phoneNumber}</span>
+                      <Phone className="size-3" />
+                      <span>
+                        {user.phoneNumber.replace(
+                          /^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/,
+                          "+$1 $2 $3 $4 $5"
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center justify-center gap-2">
                       <Car className="w-4 h-4" />
@@ -107,6 +122,18 @@ export const UsersSearch = () => {
               </Link>
             ))}
           </div>
+        </div>
+      )}
+
+      {hasNextPage && (
+        <div className="mt-4 flex justify-center">
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="btn-primary shadow-glow"
+          >
+            {isFetchingNextPage ? "Загрузка..." : "Загрузить еще"}
+          </Button>
         </div>
       )}
 

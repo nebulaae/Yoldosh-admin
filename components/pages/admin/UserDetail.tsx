@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Car, Mail, Phone, ShieldAlert, User, Wallet } from "lucide-react";
+import { Car, ChevronLeft, Mail, Phone, ShieldAlert, User, Wallet } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useBanUser, useGetUserDetails } from "@/hooks/adminHooks";
 import { banUserSchema, formatDate, getStatusColor } from "@/lib/utils";
+import Link from "next/link";
 
 export const UserDetail = ({ userId }: { userId: string }) => {
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
@@ -51,6 +52,10 @@ export const UserDetail = ({ userId }: { userId: string }) => {
   return (
     <div className="flex flex-col gap-6">
       <Toaster richColors />
+      <Link href="/admin/users-search" className="flex items-center gap-2 w-full text-emerald-500 hover:underline">
+        <ChevronLeft className="size-5" />
+        <span>Назад к пользователям</span>
+      </Link>
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
           {user.avatar ? (

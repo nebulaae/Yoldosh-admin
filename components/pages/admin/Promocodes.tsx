@@ -108,7 +108,14 @@ export const Promocodes = () => {
                                             <FormItem>
                                                 <FormLabel>Процент скидки</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" {...field} />
+                                                    <Input
+                                                        type="number"
+                                                        {...field}
+                                                        value={field.value ?? ""}
+                                                        onChange={(e) =>
+                                                            field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))
+                                                        }
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
