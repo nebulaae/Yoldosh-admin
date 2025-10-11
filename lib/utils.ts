@@ -1,9 +1,9 @@
-import z from "zod";
-import { twMerge } from "tailwind-merge";
 import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import z from "zod";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 // Admin Login Schema
@@ -12,14 +12,8 @@ export const loginSchema = z.object({
     .string()
     .min(1, "Почта необходима")
     .email("Введите правильную почту")
-    .refine(
-      (email) => email.endsWith("@yoldosh.uz"),
-      "Разрешены только корпоративные почты (@yoldosh.uz)"
-    ),
-  password: z
-    .string()
-    .min(1, "Пароль необходим")
-    .min(6, "Пароль должен быть хотя бы из 6 символов"),
+    .refine((email) => email.endsWith("@yoldosh.uz"), "Разрешены только корпоративные почты (@yoldosh.uz)"),
+  password: z.string().min(1, "Пароль необходим").min(6, "Пароль должен быть хотя бы из 6 символов"),
 });
 
 // Application Status Update Schema
@@ -41,20 +35,14 @@ export const banUserSchema = z.object({
     .string()
     .min(10, "Причина бана должна быть не менее 10 символов")
     .max(500, "Причина бана не должна превышать 500 символов"),
-  durationInDays: z
-    .number()
-    .int()
-    .positive("Срок должен быть положительным числом")
-    .optional()
-    .nullable(),
+  durationInDays: z.number().int().positive("Срок должен быть положительным числом").optional().nullable(),
 });
-
 
 // Global Notification Schema
 export const globalNotificationSchema = z.object({
-    content: z.string().min(1, "Содержание обязательно"),
-    type: z.enum(["general", "trips", "promotionAndDiscounts", "newsAndAgreement", "messages"]),
-    targetAudience: z.enum(["ALL", "DRIVERS", "PASSENGERS"]),
+  content: z.string().min(1, "Содержание обязательно"),
+  type: z.enum(["general", "trips", "promotionAndDiscounts", "newsAndAgreement", "messages"]),
+  targetAudience: z.enum(["ALL", "DRIVERS", "PASSENGERS"]),
 });
 
 // Car Model Schema
@@ -80,18 +68,9 @@ export const createAdminSchema = z.object({
     .string()
     .min(1, "Email is required")
     .email("Please enter a valid email")
-    .refine(
-      (email) => email.endsWith("@yoldosh.uz"),
-      "Only corporate emails are allowed (@yoldosh.uz)"
-    ),
-  firstName: z
-    .string()
-    .min(1, "First name is required")
-    .max(50, "First name must not exceed 50 characters"),
-  lastName: z
-    .string()
-    .min(1, "Last name is required")
-    .max(50, "Last name must not exceed 50 characters"),
+    .refine((email) => email.endsWith("@yoldosh.uz"), "Only corporate emails are allowed (@yoldosh.uz)"),
+  firstName: z.string().min(1, "First name is required").max(50, "First name must not exceed 50 characters"),
+  lastName: z.string().min(1, "Last name is required").max(50, "Last name must not exceed 50 characters"),
 });
 
 // Promocode Schemas
@@ -106,7 +85,6 @@ export const globalPromoCodeSchema = z.object({
   useAmount: z.number().min(1, "Количество использований должно быть не менее 1"),
   expiresAt: z.date().optional(),
 });
-
 
 // Utility function to format error messages
 export const formatErrorMessage = (error: any): string => {
@@ -152,7 +130,10 @@ export const getStatusColor = (status: string): string => {
     // Auditory types
     DRIVERS: "bg-blue-200/20 text-blue-800 dark:bg-blue-800/20 dark:text-blue-400",
     PASSENGERS: "bg-red-200/20 text-red-800 dark:bg-red-800/20 dark:text-red-400",
-    ALL: "bg-cyan-200/20 text-cyan-800 dark:bg-cyan-800/20 dark:text-cyan-400"
+    ALL: "bg-cyan-200/20 text-cyan-800 dark:bg-cyan-800/20 dark:text-cyan-400",
+    // Promocodes
+    ACTIVE: "bg-emerald-500 text-white",
+    INACTIVE: "bg-red-500 text-white"
   };
   return statusColors[status] || "bg-gray-100 text-gray-800";
 };
@@ -168,26 +149,25 @@ export const hasPermission = (userRole: string, requiredRole: string): boolean =
 
 export const queryKeys = {
   admin: {
-    all: ['admin'] as const,
-    profile: () => [...queryKeys.admin.all, 'profile'] as const,
-    stats: () => [...queryKeys.admin.all, 'stats'] as const,
-    driverApplications: (filters: any) => [...queryKeys.admin.all, 'driver-applications', filters] as const,
-    reports: (filters: any) => [...queryKeys.admin.all, 'reports', filters] as const,
-    trips: (filters: any = {}) => [...queryKeys.admin.all, 'trips', filters] as const,
-    notifications: (filters: any = {}) => [...queryKeys.admin.all, 'notifications', filters] as const,
-    carModels: (filters: any = {}) => [...queryKeys.admin.all, 'car-models', filters] as const,
-    restrictedWords: (filters: any = {}) => [...queryKeys.admin.all, 'restricted-words', filters] as const,
-    users: (filters: any = {}) => [...queryKeys.admin.all, 'users', filters] as const,
-    userDetails: (userId: string) => [...queryKeys.admin.all, 'users', userId] as const,
-    searchUsers: (query: string) => [...queryKeys.admin.all, 'users', 'search', query] as const,
-    promoCodes: (type: string) => [...queryKeys.admin.all, 'promo-codes', type] as const,
+    all: ["admin"] as const,
+    profile: () => [...queryKeys.admin.all, "profile"] as const,
+    stats: () => [...queryKeys.admin.all, "stats"] as const,
+    driverApplications: (filters: any) => [...queryKeys.admin.all, "driver-applications", filters] as const,
+    reports: (filters: any) => [...queryKeys.admin.all, "reports", filters] as const,
+    trips: (filters: any = {}) => [...queryKeys.admin.all, "trips", filters] as const,
+    notifications: (filters: any = {}) => [...queryKeys.admin.all, "notifications", filters] as const,
+    carModels: (filters: any = {}) => [...queryKeys.admin.all, "car-models", filters] as const,
+    restrictedWords: (filters: any = {}) => [...queryKeys.admin.all, "restricted-words", filters] as const,
+    users: (filters: any = {}) => [...queryKeys.admin.all, "users", filters] as const,
+    userDetails: (userId: string) => [...queryKeys.admin.all, "users", userId] as const,
+    searchUsers: (query: string) => [...queryKeys.admin.all, "users", "search", query] as const,
+    promoCodes: (type: string) => [...queryKeys.admin.all, "promo-codes", type] as const,
   },
   superAdmin: {
-    all: ['super-admin'] as const,
-    profile: () => [...queryKeys.superAdmin.all, 'profile'] as const,
-    admins: (filters: any) => [...queryKeys.superAdmin.all, 'admins', filters] as const,
-    stats: () => [...queryKeys.superAdmin.all, 'stats'] as const,
-    logs: (adminId: string, filters: any) => [...queryKeys.superAdmin.all, 'logs', adminId, filters] as const,
+    all: ["super-admin"] as const,
+    profile: () => [...queryKeys.superAdmin.all, "profile"] as const,
+    admins: (filters: any) => [...queryKeys.superAdmin.all, "admins", filters] as const,
+    stats: () => [...queryKeys.superAdmin.all, "stats"] as const,
+    logs: (adminId: string, filters: any) => [...queryKeys.superAdmin.all, "logs", adminId, filters] as const,
   },
 } as const;
-

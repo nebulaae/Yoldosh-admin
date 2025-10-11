@@ -5,7 +5,7 @@ const Page = () => {
     <section className="w-full p-8">
       <CarModels />
     </section>
-  )
-}
+  );
+};
 
 export default Page;

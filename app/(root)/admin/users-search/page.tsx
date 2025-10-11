@@ -1,11 +1,11 @@
-import { UserDetail } from "@/components/pages/admin/UserDetail";
+import { UserSearch } from "lucide-react";
 
-const Page = ({ params }: { params: { userId: string } }) => {
+const Page = () => {
   return (
     <section className="w-full p-8">
-      <UserDetail userId={params.userId} />
+      <UserSearch />
     </section>
-  )
-}
+  );
+};
 
 export default Page;

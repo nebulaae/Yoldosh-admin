@@ -5,7 +5,7 @@ const Page = ({ params }: { params: { userId: string } }) => {
     <section className="w-full p-8">
       <UserDetail userId={params.userId} />
     </section>
-  )
-}
+  );
+};
 
 export default Page;
