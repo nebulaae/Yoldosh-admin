@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCreateCarModel, useDeleteCarModel, useGetCarModels, useUpdateCarModel } from "@/hooks/adminHooks";
-import { carModelSchema } from "@/lib/utils";
+import { carModelSchema } from "@/lib/schemas";
 
 type CarModel = {
   id: number;

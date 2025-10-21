@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Filter, Search } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { useIntersectionObserver } from "usehooks-ts";
 import { z } from "zod";
+import { Edit } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useIntersectionObserver } from "usehooks-ts";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -14,15 +14,30 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCreateAdmin, useDeleteAdmin, useGetAllAdmins } from "@/hooks/superAdminHooks";
-import { createAdminSchema } from "@/lib/utils";
+import { useCreateAdmin, useDeleteAdmin, useGetAllAdmins, useUpdateAdminPermissions } from "@/hooks/superAdminHooks";
+import { AdminPermission, adminPermissionLabels } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { createAdminSchema } from "@/lib/schemas";
+
+type Admin = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: 'Admin' | 'SuperAdmin';
+  permissions: Partial<Record<typeof AdminPermission[keyof typeof AdminPermission], boolean>>;
+};
 
 export const Admins = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllAdmins({});
   const { mutate: createAdmin, isPending: isCreating } = useCreateAdmin();
   const { mutate: deleteAdmin, isPending: isDeleting } = useDeleteAdmin();
+  const { mutate: updatePermissions, isPending: isUpdatingPermissions } = useUpdateAdminPermissions();
 
   const { ref, isIntersecting } = useIntersectionObserver({
     threshold: 0.5,
@@ -37,7 +52,7 @@ export const Admins = () => {
     createAdmin(values, {
       onSuccess: () => {
         form.reset();
-        setIsDialogOpen(false);
+        setIsCreateDialogOpen(false);
       },
     });
   };
@@ -48,20 +63,44 @@ export const Admins = () => {
     }
   };
 
+  const handlePermissionsChange = (permission: keyof typeof AdminPermission, checked: boolean) => {
+    if (selectedAdmin) {
+      setSelectedAdmin({
+        ...selectedAdmin,
+        permissions: {
+          ...selectedAdmin.permissions,
+          [permission]: checked,
+        },
+      });
+    }
+  };
+
+  const handleSavePermissions = () => {
+    if (selectedAdmin) {
+      updatePermissions({ adminId: selectedAdmin.id, permissions: selectedAdmin.permissions }, {
+        onSuccess: () => {
+          setIsPermissionsDialogOpen(false);
+          setSelectedAdmin(null);
+        }
+      });
+    }
+  };
+
+
   useEffect(() => {
     if (isIntersecting && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
   }, [isIntersecting, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const allAdmins = data?.pages.flatMap((page: any) => page.admins.rows) ?? [];
+  const allAdmins = data?.pages.flatMap((page: any) => page.rows) ?? [];
 
   return (
     <div>
       <Toaster richColors />
       <div className="flex gap-2 justify-between items-center mb-6">
         <h1 className="title-text">Управление админами</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="btn-primary shadow-glow">Создать админа</Button>
           </DialogTrigger>
@@ -139,18 +178,27 @@ export const Admins = () => {
                 </TableRow>
               ))
             ) : allAdmins.length > 0 ? (
-              allAdmins.map((admin: any) => (
+              allAdmins.map((admin: Admin) => (
                 <TableRow key={admin.id}>
                   <TableCell>
                     {admin.firstName} {admin.lastName}
                   </TableCell>
                   <TableCell>{admin.email}</TableCell>
                   <TableCell>{admin.role}</TableCell>
-                  <TableCell className="w-32">
+                  <TableCell className="space-x-2">
+                    {admin.role === 'Admin' && (
+                      <Button size="sm" variant="outline" onClick={() => {
+                        setSelectedAdmin(admin);
+                        setIsPermissionsDialogOpen(true);
+                      }}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Права
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="destructive"
-                      disabled={isDeleting}
+                      disabled={isDeleting || admin.role === 'SuperAdmin'}
                       onClick={() => handleDelete(admin.id)}
                     >
                       Удалить
@@ -179,6 +227,29 @@ export const Admins = () => {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isPermissionsDialogOpen} onOpenChange={setIsPermissionsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Изменить права доступа для {selectedAdmin?.firstName}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {Object.values(AdminPermission).map((permission) => (
+              <div key={permission} className="flex items-center justify-between">
+                <Label htmlFor={permission} className="flex-1">{adminPermissionLabels[permission]}</Label>
+                <Switch
+                  id={permission}
+                  checked={selectedAdmin?.permissions?.[permission] ?? false}
+                  onCheckedChange={(checked) => handlePermissionsChange(permission as keyof typeof AdminPermission, checked)}
+                />
+              </div>
+            ))}
+          </div>
+          <Button onClick={handleSavePermissions} disabled={isUpdatingPermissions} className="btn-primary shadow-glow w-full">
+            {isUpdatingPermissions ? 'Сохранение...' : 'Сохранить'}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

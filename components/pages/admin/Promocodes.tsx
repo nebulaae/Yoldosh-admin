@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, PlusCircle, Ticket, Trash2, UserCheck } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useState } from "react";
+import { format } from "date-fns";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar as CalendarIcon, PlusCircle, Ticket, Trash2, UserCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     useDeletePromoCode,
@@ -23,8 +22,9 @@ import {
     useGetUserPromoCodes,
     useGrantPromoCode,
 } from "@/hooks/adminHooks";
-import { formatDate, getStatusColor, globalPromoCodeSchema, personalPromoCodeSchema } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
+import { formatDate, getStatusColor } from "@/lib/utils";
+import { personalPromoCodeSchema, globalPromoCodeSchema } from "@/lib/schemas";
 
 export const Promocodes = () => {
     const [isPersonalDialogOpen, setIsPersonalDialogOpen] = useState(false);
@@ -68,7 +68,7 @@ export const Promocodes = () => {
 
     return (
         <div>
-            <Toaster />
+            <Toaster richColors />
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
                 <div className="mb-4 sm:mb-0">
                     <h1 className="title-text">Промокоды</h1>

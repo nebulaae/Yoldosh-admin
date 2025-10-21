@@ -1,8 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
-
-import api from "@/lib/api";
 import {
   banUserSchema,
   carModelSchema,
@@ -11,10 +9,12 @@ import {
   globalPromoCodeSchema,
   loginSchema,
   personalPromoCodeSchema,
-  queryKeys,
   updateApplicationStatusSchema,
   updateReportStatusSchema,
-} from "@/lib/utils";
+} from "@/lib/schemas";
+import { queryKeys } from "@/lib/query-keys";
+
+import api from "@/lib/api";
 
 // Auth
 export const useAdminLogin = () => {
@@ -221,6 +221,17 @@ export const useDeleteTrip = () => {
       toast.success("Поездка успешно удалена");
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.trips({}) });
     },
+  });
+};
+
+export const useGetTripDetails = (tripId: string) => {
+  return useQuery({
+    queryKey: queryKeys.admin.tripDetails(tripId),
+    queryFn: async () => {
+      const { data } = await api.get(`/routes/${tripId}`); // Using the new /routes/:id endpoint for detailed geojson
+      return data.data;
+    },
+    enabled: !!tripId,
   });
 };
 

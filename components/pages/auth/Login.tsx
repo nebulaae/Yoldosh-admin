@@ -8,11 +8,11 @@ import { Toaster } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useAdminLogin } from "@/hooks/adminHooks";
-import { loginSchema } from "@/lib/utils";
+import { loginSchema } from "@/lib/schemas";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 export const Login = () => {
   const router = useRouter();
@@ -43,7 +43,7 @@ export const Login = () => {
 
   return (
     <>
-      <Toaster />
+      <Toaster richColors />
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

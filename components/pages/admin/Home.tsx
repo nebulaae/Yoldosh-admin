@@ -26,8 +26,8 @@ export const Home = () => {
         <div className="p-8 text-red-500">Ошибка загрузки статистики. Попробуйте обновить страницу.</div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <Card className="component-2 border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl shadow-xl">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-sm font-medium">Новые пользователи</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -36,7 +36,7 @@ export const Home = () => {
               <p className="text-xs text-muted-foreground">за последние 30 дней</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="component-2 border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Новые поездки</CardTitle>
               <Car className="h-4 w-4 text-muted-foreground" />
@@ -46,7 +46,7 @@ export const Home = () => {
               <p className="text-xs text-muted-foreground">за последние 30 дней</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="component-2 border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl shadow-xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Новые жалобы</CardTitle>
               <ShieldAlert className="h-4 w-4 text-muted-foreground" />

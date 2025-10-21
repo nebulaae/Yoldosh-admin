@@ -1,9 +1,10 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { z } from "zod";
+import { toast } from "sonner";
+import { queryKeys } from "@/lib/query-keys";
+import { createAdminSchema } from "@/lib/schemas";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import api from "@/lib/api";
-import { createAdminSchema, queryKeys } from "@/lib/utils";
 
 export const useGetSuperAdminProfile = (enabled: boolean = true) => {
   return useQuery({
@@ -57,6 +58,20 @@ export const useDeleteAdmin = () => {
     },
     onSuccess: () => {
       toast.success("Администратор успешно удален");
+      queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.admins({}) });
+    },
+  });
+};
+
+export const useUpdateAdminPermissions = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ adminId, permissions }: { adminId: string; permissions: any }) => {
+      const { data } = await api.put(`/super-admin/admins/${adminId}/permissions`, permissions);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Права доступа администратора успешно обновлены.");
       queryClient.invalidateQueries({ queryKey: queryKeys.superAdmin.admins({}) });
     },
   });

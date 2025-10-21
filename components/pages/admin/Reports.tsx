@@ -18,14 +18,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { banUserSchema } from "@/lib/schemas";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBanUser, useGetReports, useUpdateReportStatus } from "@/hooks/adminHooks";
-import { banUserSchema, formatDate, getStatusColor } from "@/lib/utils";
+import { formatDate, getStatusColor } from "@/lib/utils";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 type Report = {
   id: string;
@@ -296,7 +297,7 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
 export const Reports = () => {
   return (
     <div>
-      <Toaster />
+      <Toaster richColors />
       <h1 className="title-text">Жалобы</h1>
       <p className="subtitle-text">Управление жалобами пользователей</p>
       <Tabs defaultValue="PENDING" className="w-full mt-4">

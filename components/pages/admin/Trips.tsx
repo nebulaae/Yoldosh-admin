@@ -1,5 +1,6 @@
 "use client";
 
+import z from "zod";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -7,7 +8,6 @@ import { Calendar as CalendarIcon, Filter, MapPin, Pencil, Search, Trash2 } from
 import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
-import z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,7 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { useDeleteTrip, useEditTrip, useGetTrips } from "@/hooks/adminHooks";
-import { editTripSchema, formatDate, getStatusColor } from "@/lib/utils";
+import { formatDate, getStatusColor } from "@/lib/utils";
+import { editTripSchema } from "@/lib/schemas";
 
 type Trip = {
   id: string;
@@ -94,7 +95,7 @@ export const Trips = () => {
 
   return (
     <div>
-      <Toaster />
+      <Toaster richColors />
       <h1 className="title-text">Поездки</h1>
       <p className="subtitle-text mb-6">Мониторинг всех поездок в системе</p>
 

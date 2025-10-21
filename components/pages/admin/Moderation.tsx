@@ -1,11 +1,11 @@
 "use client";
 
+import { z } from "zod";
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Search, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useDebounceValue } from "usehooks-ts";
-import { z } from "zod";
+import { Plus, Search, Trash2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -48,7 +48,7 @@ export const Moderation = () => {
 
   return (
     <div>
-      <Toaster />
+      <Toaster richColors />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="title-text">Модерация чата</h1>

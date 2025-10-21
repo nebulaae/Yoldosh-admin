@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Car, ChevronLeft, Mail, Phone, ShieldAlert, User, Wallet } from "lucide-react";
-import { useForm } from "react-hook-form";
+import Link from "next/link";
+
 import { z } from "zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Car, ChevronLeft, Phone, ShieldAlert, User, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,8 +18,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useBanUser, useGetUserDetails } from "@/hooks/adminHooks";
-import { banUserSchema, formatDate, getStatusColor } from "@/lib/utils";
-import Link from "next/link";
+import { formatDate, getStatusColor } from "@/lib/utils";
+import { banUserSchema } from "@/lib/schemas";
 
 export const UserDetail = ({ userId }: { userId: string }) => {
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
@@ -131,7 +133,7 @@ export const UserDetail = ({ userId }: { userId: string }) => {
         </Dialog>
       </div>
 
-      <Card className="dark:bg-slate-900">
+      <Card className="component shadow-none">
         <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <InfoItem
             icon={<ShieldAlert />}

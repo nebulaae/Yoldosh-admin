@@ -114,7 +114,7 @@
 
 @layer base {
   * {
-    @apply border-border selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black;
+    @apply border-border selection:bg-emerald-600/50 selection:text-emerald-950 dark:selection:bg-emerald-800/20 dark:selection:text-emerald-400;
   }
 
   body {

@@ -26,7 +26,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateGlobalNotification, useGetNotifications } from "@/hooks/adminHooks";
-import { formatDate, getStatusColor, globalNotificationSchema } from "@/lib/utils";
+import { formatDate, getStatusColor } from "@/lib/utils";
+import { globalNotificationSchema } from "@/lib/schemas";
 
 export const Notifications = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -68,7 +69,7 @@ export const Notifications = () => {
 
   return (
     <div>
-      <Toaster />
+      <Toaster richColors />
       <h1 className="title-text mb-2">Уведомления</h1>
       <p className="text-sm text-gray-500">Отправка push-уведомлений пользователям.</p>
       <div className="flex flex-col lg:flex-row items-start justify-between w-full gap-2 sm:gap-8 mt-4">

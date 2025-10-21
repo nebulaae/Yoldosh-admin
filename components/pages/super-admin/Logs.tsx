@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Filter, Search } from "lucide-react";
+import { Calendar as CalendarIcon, Filter } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -14,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -48,7 +47,7 @@ export const Logs = () => {
   } = useGetAdminLogs(selectedAdminId!, filters);
 
   const allLogs = logsData?.pages.flatMap((page: any) => page) ?? [];
-  const allAdmins = adminsData?.pages.flatMap((page: any) => page.admins.rows) ?? [];
+  const allAdmins = adminsData?.pages.flatMap((page: any) => page.rows) ?? [];
 
   return (
     <div>
