@@ -144,7 +144,10 @@ export const CarModels = () => {
     <div>
       <Toaster richColors />
       <div className="flex justify-between items-center mb-6">
-        <h1 className="title-text">Модели Машин</h1>
+        <div>
+          <h1 className="title-text">Модели Машин</h1>
+          <p className="subtitle-text">Справочник доступных моделей автомобилей</p>
+        </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="btn-primary shadow-glow">Добавить модель</Button>
@@ -158,7 +161,7 @@ export const CarModels = () => {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="component border border-neutral-50 dark:border-neutral-50 rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
@@ -168,7 +171,7 @@ export const CarModels = () => {
               <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className="border-neutral-950">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>

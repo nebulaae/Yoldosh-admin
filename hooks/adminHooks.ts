@@ -9,14 +9,13 @@ import {
   globalPromoCodeSchema,
   loginSchema,
   personalPromoCodeSchema,
-  updateApplicationStatusSchema,
   updateReportStatusSchema,
 } from "@/lib/schemas";
 import { queryKeys } from "@/lib/query-keys";
 
 import api from "@/lib/api";
 
-// Auth
+// --- Auth Hooks (Keep as is) ---
 export const useAdminLogin = () => {
   return useMutation({
     mutationFn: async (values: z.infer<typeof loginSchema>) => {
@@ -37,9 +36,16 @@ export const useAdminLogout = () => {
     },
     onSuccess: () => {
       localStorage.removeItem("admin-token");
+      localStorage.removeItem("super-admin-token");
       queryClient.clear();
       window.location.href = "/";
     },
+    onError: () => {
+      localStorage.removeItem("admin-token");
+      localStorage.removeItem("super-admin-token");
+      queryClient.clear();
+      window.location.href = "/";
+    }
   });
 };
 
@@ -65,40 +71,71 @@ export const useGetAdminStats = () => {
   });
 };
 
-// Driver Applications
-export const useGetDriverApplications = (filters: { [key: string]: any }) => {
+
+// --- Car Applications (Updated) ---
+// Renamed from useGetDriverApplications to useGetCarApplications
+export const useGetCarApplications = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
-    queryKey: queryKeys.admin.driverApplications(filters),
+    // Update query key to reflect 'car' applications
+    queryKey: queryKeys.admin.carApplications(filters),
     queryFn: async ({ pageParam = 1 }) => {
+      // Endpoint remains the same but returns Car data now
       const { data } = await api.get("/admin/driver-applications", {
-        params: { ...filters, page: pageParam },
+        params: { ...filters, page: pageParam, limit: 9 }, // Adjust limit as needed for card layout
       });
+      // Assuming backend returns { data: { applications: [], total: number, ... } }
       return data.data;
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
+      // Use currentPage and totalPages from the response
       return lastPage.currentPage < lastPage.totalPages ? lastPage.currentPage + 1 : undefined;
     },
+    refetchOnWindowFocus: false, // Optional: prevent refetch on window focus
   });
 };
 
-export const useUpdateApplicationStatus = () => {
+// Renamed from useUpdateApplicationStatus to useUpdateCarApplicationStatus
+// Zod schema for the mutation input (optional but good practice)
+const updateCarStatusSchema = z.object({
+  carId: z.string().min(1, "Car ID is required"),
+  status: z.enum(["VERIFIED", "REJECTED"] as const, { message: "Status is required" }),
+  rejectionReason: z.string().optional(), // Optional reason
+});
+
+export const useUpdateCarApplicationStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (values: z.infer<typeof updateApplicationStatusSchema>) => {
-      const { data } = await api.patch(`/admin/driver-applications/${values.userId}/status`, { status: values.status });
+    // Define the mutation function input type
+    mutationFn: async (values: z.infer<typeof updateCarStatusSchema>) => {
+      const { carId, status, rejectionReason } = values;
+      // Call the updated backend endpoint with carId
+      const { data } = await api.patch(`/admin/driver-applications/${carId}/status`, {
+        status: status,
+        ...(rejectionReason && { rejectionReason: rejectionReason }), // Only include reason if provided
+      });
       return data;
     },
-    onSuccess: () => {
-      toast.success("Статус заявки успешно обновлен");
+    onSuccess: (data, variables) => {
+      toast.success(`Application status successfully updated to ${variables.status}`);
+      // Invalidate queries related to car applications to refetch data
       queryClient.invalidateQueries({
-        queryKey: queryKeys.admin.driverApplications({}),
+        queryKey: queryKeys.admin.carApplications({}), // Invalidate all car application queries
+        refetchType: 'all' // Refetch active and inactive queries
       });
+      // Optionally, invalidate user details if role might change
+      // queryClient.invalidateQueries(queryKeys.admin.userDetails(data?.application?.driver_id));
     },
+    onError: (error: any) => {
+      // Error handling is likely done by the API interceptor, but you can add specific logic here if needed
+      console.error("Update application status error:", error);
+      // toast.error("Failed to update application status."); // Interceptor shows toast
+    }
   });
 };
 
-// Reports
+
+// --- Reports Hooks (Keep as is, assuming backend is correct) ---
 export const useGetReports = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.admin.reports(filters),
@@ -128,7 +165,8 @@ export const useUpdateReportStatus = () => {
   });
 };
 
-// Users, Search, Ban
+
+// --- Users, Search, Ban Hooks (Keep as is, assuming backend is correct) ---
 export const useGetAllUsers = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.admin.users(filters),
@@ -145,6 +183,7 @@ export const useGetAllUsers = (filters: { [key: string]: any }) => {
   });
 };
 
+// useSearchUsers likely doesn't need infinite query
 export const useSearchUsers = (query: string) => {
   return useQuery({
     queryKey: queryKeys.admin.searchUsers(query),
@@ -152,7 +191,7 @@ export const useSearchUsers = (query: string) => {
       const { data } = await api.get("/admin/users/search", { params: { query } });
       return data.data;
     },
-    enabled: !!query && query.length > 2,
+    enabled: !!query && query.length > 2, // Only run if query has min length
   });
 };
 
@@ -163,7 +202,7 @@ export const useGetUserDetails = (userId: string) => {
       const { data } = await api.get(`/admin/users/${userId}`);
       return data.data;
     },
-    enabled: !!userId,
+    enabled: !!userId, // Only run if userId is provided
   });
 };
 
@@ -171,6 +210,7 @@ export const useBanUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (values: z.infer<typeof banUserSchema>) => {
+      // Backend expects reason and optional durationInDays in the body
       await api.post(`/admin/users/${values.userId}/ban`, {
         reason: values.reason,
         durationInDays: values.durationInDays,
@@ -178,12 +218,15 @@ export const useBanUser = () => {
     },
     onSuccess: (_, variables) => {
       toast.success("Пользователь успешно забанен");
+      // Invalidate the specific user's details and potentially the list of all users/banned users
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.userDetails(variables.userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users({}) }); // Invalidate general user list
+      // queryClient.invalidateQueries(queryKeys.admin.bannedUsers({})); // If you have a separate query for banned users
     },
   });
 };
 
-// Trips
+// --- Trips Hooks (Keep as is) ---
 export const useGetTrips = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.admin.trips(filters),
@@ -202,11 +245,14 @@ export const useEditTrip = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (values: z.infer<typeof editTripSchema>) => {
+      // Backend expects updates in the body
       await api.patch(`/admin/trips/${values.tripId}`, values);
     },
     onSuccess: () => {
       toast.success("Поездка успешно обновлена");
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.trips({}) });
+      // Might need to invalidate specific trip details if you have a query for that
+      // queryClient.invalidateQueries(queryKeys.admin.tripDetails(variables.tripId));
     },
   });
 };
@@ -224,18 +270,19 @@ export const useDeleteTrip = () => {
   });
 };
 
+// Assuming useGetTripDetails exists for detailed view (keep as is)
 export const useGetTripDetails = (tripId: string) => {
   return useQuery({
     queryKey: queryKeys.admin.tripDetails(tripId),
     queryFn: async () => {
-      const { data } = await api.get(`/routes/${tripId}`); // Using the new /routes/:id endpoint for detailed geojson
+      const { data } = await api.get(`/routes/${tripId}`); // Example endpoint
       return data.data;
     },
     enabled: !!tripId,
   });
 };
 
-// Notifications
+// --- Notifications Hooks (Keep as is) ---
 export const useGetNotifications = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.admin.notifications(filters),
@@ -263,7 +310,7 @@ export const useCreateGlobalNotification = () => {
   });
 };
 
-// Car Models
+// --- Car Models Hooks (Keep as is) ---
 export const useGetCarModels = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.admin.carModels(filters),
@@ -307,7 +354,7 @@ export const useUpdateCarModel = () => {
 export const useDeleteCarModel = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: string | number) => { // Accept string or number
       await api.delete(`/admin/car-models/${id}`);
     },
     onSuccess: () => {
@@ -317,7 +364,7 @@ export const useDeleteCarModel = () => {
   });
 };
 
-// Word Moderation
+// --- Word Moderation Hooks (Keep as is) ---
 export const useGetRestrictedWords = (filters: { [key: string]: any }) => {
   return useInfiniteQuery({
     queryKey: queryKeys.admin.restrictedWords(filters),
@@ -360,13 +407,15 @@ export const useDeleteRestrictedWord = () => {
   });
 };
 
-// Promocodes
+
+// --- Promocodes Hooks (Keep as is) ---
 export const useGetUserPromoCodes = () => {
   return useQuery({
     queryKey: queryKeys.admin.promoCodes("user"),
     queryFn: async () => {
       const { data } = await api.get("/admin/user-promocodes");
-      return data.data.promoCodes;
+      // Ensure the backend returns data in a consistent structure
+      return data.data?.promoCodes ?? []; // Default to empty array if structure is unexpected
     },
   });
 };
@@ -376,7 +425,7 @@ export const useGetGlobalPromoCodes = () => {
     queryKey: queryKeys.admin.promoCodes("global"),
     queryFn: async () => {
       const { data } = await api.get("/admin/promocodes");
-      return data.data.promoCodes;
+      return data.data?.promoCodes ?? [];
     },
   });
 };
@@ -391,19 +440,20 @@ export const useGrantPromoCode = () => {
     mutationFn: async (values: GrantPromoCodePayload) => {
       await api.post(`/admin/promocodes`, values);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast.success("Промокод успешно создан");
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes("user") });
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes("global") });
+      // Invalidate both user and global lists, or be more specific based on type
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes(variables.type === 'GLOBAL' ? 'global' : 'user') });
     },
   });
 };
 
+// Assuming useEditPromocode exists (keep as is)
 export const useEditPromocode = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (promoCodeId: string) => {
-      await api.put(`/admin/promocodes/${promoCodeId}`);
+    mutationFn: async (promoCodeId: string) => { // Adjust payload as needed
+      await api.put(`/admin/promocodes/${promoCodeId}`, { /* payload for edit */ });
     },
     onSuccess: () => {
       toast.success("Промокод успешно изменен");

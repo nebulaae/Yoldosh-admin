@@ -20,7 +20,23 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("admin-token");
+    const isAdminRoute = window.location.pathname.startsWith('/admin');
+    const isSuperAdminRoute = window.location.pathname.startsWith('/super-admin');
+
+    let token = null;
+    let tokenKey = null;
+
+    if (isSuperAdminRoute) {
+      tokenKey = "super-admin-token";
+      token = localStorage.getItem(tokenKey);
+    } else if (isAdminRoute) {
+      // Для обычных админов используем старый ключ или новый, если он есть
+      tokenKey = "admin-token";
+      token = localStorage.getItem(tokenKey);
+    } else {
+      // Если мы на странице логина "/", пробуем найти любой токен для AuthGuard
+      token = localStorage.getItem("super-admin-token") || localStorage.getItem("admin-token");
+    }
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -33,9 +49,14 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     // This logic handles API errors for an already authenticated session.
     if (error.response?.status === 401 && typeof window !== "undefined") {
+      const isAdminRoute = window.location.pathname.startsWith('/admin');
+      const isSuperAdminRoute = window.location.pathname.startsWith('/super-admin');
+      const tokenKeyToRemove = isSuperAdminRoute ? "super-admin-token" : "admin-token";
+
+      // Только если мы не на главной странице, чтобы избежать цикла редиректов при первой загрузке
       if (window.location.pathname !== "/") {
-        localStorage.removeItem("admin-token");
-        window.location.href = "/";
+        localStorage.removeItem(tokenKeyToRemove);
+        window.location.href = "/"; // Перенаправляем на логин
         showErrorToast("Сессия истекла. Пожалуйста, войдите снова.");
       }
     }

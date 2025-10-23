@@ -28,8 +28,12 @@ export const Login = () => {
 
   useEffect(() => {
     if (isSuccess && loginData) {
-      localStorage.setItem("admin-token", loginData.data.accessToken);
-      if (loginData.data.admin.role === "SuperAdmin") {
+      const token = loginData.data.accessToken;
+      const userRole = loginData.data.admin.role;
+      const tokenKey = userRole === "SuperAdmin" ? "super-admin-token" : "admin-token";
+
+      localStorage.setItem(tokenKey, token);
+      if (userRole === "SuperAdmin") {
         router.push("/super-admin");
       } else {
         router.push("/admin");

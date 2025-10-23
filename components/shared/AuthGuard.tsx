@@ -31,30 +31,36 @@ export const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
   const isError = isSuperAdminRoute ? isSuperAdminError : isAdminError;
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("admin-token") : null;
+    const tokenKey = requiredRole === "SuperAdmin" ? "super-admin-token" : "admin-token";
+    const token = typeof window !== "undefined" ? localStorage.getItem(tokenKey) : null;
+
     if (!token) {
-      router.replace("/");
+      router.replace("/"); // Перенаправляем на логин, если нужного токена нет
       return;
     }
 
     if (!isLoading && (isError || !user)) {
-      localStorage.removeItem("admin-token");
+      localStorage.removeItem(tokenKey);
       router.replace("/");
     }
 
     if (!isLoading && user) {
       const roleHierarchy = { Admin: 1, SuperAdmin: 2 };
-      const userLevel = roleHierarchy[user.role as Role] || 0;
+      const userLevel = roleHierarchy[user.role as Role] || 0; // [cite: 741]
       const requiredLevel = roleHierarchy[requiredRole];
 
+      // Если уровень пользователя ниже требуемого
       if (userLevel < requiredLevel) {
+        // Если пользователь Admin пытается зайти на SuperAdmin роут
         if (user.role === "Admin") {
-          router.replace("/admin");
+          router.replace("/admin"); // Редирект на его дашборд
         } else {
+          // В иных случаях (например, если что-то пошло не так) - на логин
           router.replace("/");
         }
       }
     }
+    // Зависимости useEffect остаются прежними, но логика внутри изменилась
   }, [isLoading, isError, user, router, requiredRole]);
 
   if (isLoading || !user) {
