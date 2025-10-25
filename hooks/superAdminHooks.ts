@@ -1,10 +1,10 @@
-import { z } from "zod";
-import { toast } from "sonner";
-import { queryKeys } from "@/lib/query-keys";
-import { createAdminSchema } from "@/lib/schemas";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { z } from "zod";
 
 import api from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
+import { createAdminSchema } from "@/lib/schemas";
 
 export const useGetSuperAdminProfile = (enabled: boolean = true) => {
   return useQuery({

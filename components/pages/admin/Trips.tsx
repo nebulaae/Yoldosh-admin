@@ -1,6 +1,5 @@
 "use client";
 
-import z from "zod";
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -8,6 +7,7 @@ import { Calendar as CalendarIcon, Filter, MapPin, Pencil, Search, Trash2 } from
 import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
+import z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -24,16 +24,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { useDeleteTrip, useEditTrip, useGetTrips } from "@/hooks/adminHooks";
-import { formatDate, getStatusColor } from "@/lib/utils";
 import { editTripSchema } from "@/lib/schemas";
-
-type Trip = {
-  id: string;
-  driver: { firstName: string; lastName: string; phoneNumber: string };
-  fromVillage: { nameRu: string };
-  toVillage: { nameRu: string };
-  departure_ts: string;
-};
+import { formatDate, getStatusColor } from "@/lib/utils";
+import { Trip } from "@/types";
 
 export const Trips = () => {
   const [searchTerm, setSearchTerm] = useState("");

@@ -2,20 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Bell,
-  CarFront,
-  CarIcon,
-  Flag,
-  Home,
-  LogOut,
-  Route,
-  Search,
-  ShieldAlert,
-  TicketPercent,
-  UserRoundCheck,
-} from "lucide-react";
+import { CarIcon, LogOut, Search } from "lucide-react";
 
+import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
@@ -26,20 +15,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { adminItems } from "@/contants";
 import { useAdminLogout, useGetAdminProfile } from "@/hooks/adminHooks";
-import { Separator } from "../ui/separator";
-import { AdminPermission } from "@/lib/utils";
-
-const items = [
-  { title: "Главное", url: "/admin", icon: Home },
-  { title: "Заявки водителей", url: "/admin/driver-applications", icon: UserRoundCheck, permission: AdminPermission.DRIVER_APPLICATIONS },
-  { title: "Жалобы", url: "/admin/reports", icon: Flag, permission: AdminPermission.REPORTS },
-  { title: "Поездки", url: "/admin/trips", icon: Route, permission: AdminPermission.TRIPS },
-  { title: "Уведомления", url: "/admin/notifications", icon: Bell, permission: AdminPermission.NOTIFICATIONS },
-  { title: "Модели машин", url: "/admin/car-models", icon: CarFront, permission: AdminPermission.CAR_MODELS },
-  { title: "Промокоды", url: "/admin/promocodes", icon: TicketPercent, permission: AdminPermission.PROMOCODES },
-  { title: "Модерация", url: "/admin/moderation", icon: ShieldAlert, permission: AdminPermission.MODERATION },
-];
 
 export const AdminSidebar = () => {
   const pathname = usePathname();
@@ -88,27 +65,26 @@ export const AdminSidebar = () => {
               </div>
 
               <div className="mt-2 space-y-1">
-                {items.map((item) => {
-                  const allowed =
-                    !item.permission || permissions[item.permission] === true;
+                {adminItems.map((item) => {
+                  const allowed = !item.permission || permissions[item.permission] === true;
 
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         asChild
                         disabled={!allowed}
-                        className={`${allowed
+                        className={`${
+                          allowed
                             ? "hover:bg-emerald-700/40 text-emerald-950 dark:text-emerald-500 dark:hover:bg-gray-50/10 dark:hover:text-white"
                             : "opacity-50 pointer-events-none"
-                          }`}
+                        }`}
                       >
                         {allowed ? (
                           <Link
                             href={item.url}
-                            className={`${pathname === item.url
-                                ? "bg-emerald-800/20 text-emerald-900"
-                                : "text-emerald-800"
-                              } flex items-center gap-2`}
+                            className={`${
+                              pathname === item.url ? "bg-emerald-800/20 text-emerald-900" : "text-emerald-800"
+                            } flex items-center gap-2`}
                           >
                             <item.icon />
                             <span>{item.title}</span>

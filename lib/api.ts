@@ -20,8 +20,8 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const isAdminRoute = window.location.pathname.startsWith('/admin');
-    const isSuperAdminRoute = window.location.pathname.startsWith('/super-admin');
+    const isAdminRoute = window.location.pathname.startsWith("/admin");
+    const isSuperAdminRoute = window.location.pathname.startsWith("/super-admin");
 
     let token = null;
     let tokenKey = null;
@@ -49,8 +49,8 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     // This logic handles API errors for an already authenticated session.
     if (error.response?.status === 401 && typeof window !== "undefined") {
-      const isAdminRoute = window.location.pathname.startsWith('/admin');
-      const isSuperAdminRoute = window.location.pathname.startsWith('/super-admin');
+      const isAdminRoute = window.location.pathname.startsWith("/admin");
+      const isSuperAdminRoute = window.location.pathname.startsWith("/super-admin");
       const tokenKeyToRemove = isSuperAdminRoute ? "super-admin-token" : "admin-token";
 
       // Только если мы не на главной странице, чтобы избежать цикла редиректов при первой загрузке

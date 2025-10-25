@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Separator } from "@radix-ui/react-separator";
-import { CarIcon, Home, LogOut, Logs, Search, UserStar } from "lucide-react";
+import { CarIcon, Home, LogOut, Logs, UserStar } from "lucide-react";
 
 import {
   Sidebar,
@@ -15,25 +15,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { superAdminItems } from "@/contants";
 import { useAdminLogout } from "@/hooks/adminHooks";
-
-const items = [
-  {
-    title: "Главная",
-    url: "/super-admin",
-    icon: Home,
-  },
-  {
-    title: "Администраторы",
-    url: "/super-admin/admins",
-    icon: UserStar,
-  },
-  {
-    title: "Логи",
-    url: "/super-admin/logs",
-    icon: Logs,
-  },
-];
 
 export const SuperAdminSidebar = () => {
   const pathname = usePathname();
@@ -62,7 +45,7 @@ export const SuperAdminSidebar = () => {
             <Separator orientation="horizontal" />
             <SidebarMenu className="flex flex-col h-full py-4">
               <div className="mt-2 space-y-1">
-                {items.map((item) => (
+                {superAdminItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild

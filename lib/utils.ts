@@ -52,7 +52,7 @@ export const getStatusColor = (status: string): string => {
     ALL: "bg-cyan-200/20 text-cyan-800 dark:bg-cyan-800/20 dark:text-cyan-400",
     // Promocodes
     ACTIVE: "bg-emerald-500 text-white",
-    INACTIVE: "bg-red-500 text-white"
+    INACTIVE: "bg-red-500 text-white",
   };
   return statusColors[status] || "bg-gray-100 text-gray-800";
 };
@@ -67,23 +67,21 @@ export const hasPermission = (userRole: string, requiredRole: string): boolean =
 };
 
 export const AdminPermission = {
-  DRIVER_APPLICATIONS: 'driver_applications',
-  REPORTS: 'reports',
-  TRIPS: 'trips',
-  NOTIFICATIONS: 'notifications',
-  CAR_MODELS: 'car_models',
-  PROMOCODES: 'promocodes',
-  MODERATION: 'moderation',
+  DRIVER_APPLICATIONS: "driver_applications",
+  REPORTS: "reports",
+  TRIPS: "trips",
+  NOTIFICATIONS: "notifications",
+  CAR_MODELS: "car_models",
+  PROMOCODES: "promocodes",
+  MODERATION: "moderation",
 } as const;
 
-export const adminPermissionLabels: { [key in typeof AdminPermission[keyof typeof AdminPermission]]: string } = {
-  [AdminPermission.DRIVER_APPLICATIONS]: 'Заявки водителей',
-  [AdminPermission.REPORTS]: 'Жалобы',
-  [AdminPermission.TRIPS]: 'Поездки',
-  [AdminPermission.NOTIFICATIONS]: 'Уведомления',
-  [AdminPermission.CAR_MODELS]: 'Модели машин',
-  [AdminPermission.PROMOCODES]: 'Промокоды',
-  [AdminPermission.MODERATION]: 'Модерация',
+export const adminPermissionLabels: { [key in (typeof AdminPermission)[keyof typeof AdminPermission]]: string } = {
+  [AdminPermission.DRIVER_APPLICATIONS]: "Заявки водителей",
+  [AdminPermission.REPORTS]: "Жалобы",
+  [AdminPermission.TRIPS]: "Поездки",
+  [AdminPermission.NOTIFICATIONS]: "Уведомления",
+  [AdminPermission.CAR_MODELS]: "Модели машин",
+  [AdminPermission.PROMOCODES]: "Промокоды",
+  [AdminPermission.MODERATION]: "Модерация",
 };
-
-

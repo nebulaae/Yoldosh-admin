@@ -1,28 +1,18 @@
-"use client"
-
-import Link from "next/link";
-import Image from "next/image";
+"use client";
 
 import { useState } from "react";
-import { Car, Phone, Search, User } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Car, Phone, Search, UserRound } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetAllUsers } from "@/hooks/adminHooks";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
-type User = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  avatar: string | null;
-  role: "Passenger" | "Driver";
-  isBanned: boolean;
-};
+import { User } from "@/types";
 
 export const UsersSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,7 +78,7 @@ export const UsersSearch = () => {
                         />
                       ) : (
                         <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center">
-                          <User className="w-8 h-8 text-white" />
+                          <UserRound className="w-8 h-8 text-white" />
                         </div>
                       )}
                       {user.isBanned && (
@@ -98,7 +88,9 @@ export const UsersSearch = () => {
                       )}
                     </div>
                     <CardTitle className="mt-2">
-                      <span className="font-bold">{user.firstName} {user.lastName}</span>
+                      <span className="font-bold">
+                        {user.firstName} {user.lastName}
+                      </span>
                     </CardTitle>
                     <p className="font-mono text-xs text-muted-foreground">ID: {user.id.substring(0, 8)}</p>
                   </CardHeader>
@@ -107,10 +99,7 @@ export const UsersSearch = () => {
                     <div className="flex items-center justify-center gap-2">
                       <Phone className="size-3" />
                       <span>
-                        {user.phoneNumber.replace(
-                          /^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/,
-                          "+$1 $2 $3 $4 $5"
-                        )}
+                        {user.phoneNumber.replace(/^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")}
                       </span>
                     </div>
                     <div className="flex items-center justify-center gap-2">
@@ -127,11 +116,7 @@ export const UsersSearch = () => {
 
       {hasNextPage && (
         <div className="mt-4 flex justify-center">
-          <Button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="btn-primary shadow-glow"
-          >
+          <Button onClick={() => fetchNextPage()} disabled={isFetchingNextPage} className="btn-primary shadow-glow">
             {isFetchingNextPage ? "Загрузка..." : "Загрузить еще"}
           </Button>
         </div>

@@ -1,9 +1,9 @@
-import { DriverApplications } from "@/components/pages/admin/DriverApplications";
+import { Applications } from "@/components/pages/admin/Applications";
 
 const Page = () => {
   return (
     <section className="w-full p-8">
-      <DriverApplications />
+      <Applications />
     </section>
   );
 };

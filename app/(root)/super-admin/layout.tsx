@@ -1,6 +1,6 @@
-import { AuthGuard } from "@/components/shared/AuthGuard";
-import { Navbar } from "@/components/shared/Navbar";
-import { SuperAdminSidebar } from "@/components/shared/SuperAdminSidebar";
+import { AuthGuard } from "@/components/functions/AuthGuard";
+import { Navbar } from "@/components/shared/admin/Navbar";
+import { SuperAdminSidebar } from "@/components/shared/admin/SuperAdminSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function RootLayout({

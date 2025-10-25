@@ -1,6 +1,9 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import api from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 import {
   banUserSchema,
   carModelSchema,
@@ -11,9 +14,6 @@ import {
   personalPromoCodeSchema,
   updateReportStatusSchema,
 } from "@/lib/schemas";
-import { queryKeys } from "@/lib/query-keys";
-
-import api from "@/lib/api";
 
 // --- Auth Hooks (Keep as is) ---
 export const useAdminLogin = () => {
@@ -45,7 +45,7 @@ export const useAdminLogout = () => {
       localStorage.removeItem("super-admin-token");
       queryClient.clear();
       window.location.href = "/";
-    }
+    },
   });
 };
 
@@ -70,7 +70,6 @@ export const useGetAdminStats = () => {
     },
   });
 };
-
 
 // --- Car Applications (Updated) ---
 // Renamed from useGetDriverApplications to useGetCarApplications
@@ -121,7 +120,7 @@ export const useUpdateCarApplicationStatus = () => {
       // Invalidate queries related to car applications to refetch data
       queryClient.invalidateQueries({
         queryKey: queryKeys.admin.carApplications({}), // Invalidate all car application queries
-        refetchType: 'all' // Refetch active and inactive queries
+        refetchType: "all", // Refetch active and inactive queries
       });
       // Optionally, invalidate user details if role might change
       // queryClient.invalidateQueries(queryKeys.admin.userDetails(data?.application?.driver_id));
@@ -130,10 +129,9 @@ export const useUpdateCarApplicationStatus = () => {
       // Error handling is likely done by the API interceptor, but you can add specific logic here if needed
       console.error("Update application status error:", error);
       // toast.error("Failed to update application status."); // Interceptor shows toast
-    }
+    },
   });
 };
-
 
 // --- Reports Hooks (Keep as is, assuming backend is correct) ---
 export const useGetReports = (filters: { [key: string]: any }) => {
@@ -164,7 +162,6 @@ export const useUpdateReportStatus = () => {
     },
   });
 };
-
 
 // --- Users, Search, Ban Hooks (Keep as is, assuming backend is correct) ---
 export const useGetAllUsers = (filters: { [key: string]: any }) => {
@@ -354,7 +351,8 @@ export const useUpdateCarModel = () => {
 export const useDeleteCarModel = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string | number) => { // Accept string or number
+    mutationFn: async (id: string | number) => {
+      // Accept string or number
       await api.delete(`/admin/car-models/${id}`);
     },
     onSuccess: () => {
@@ -407,7 +405,6 @@ export const useDeleteRestrictedWord = () => {
   });
 };
 
-
 // --- Promocodes Hooks (Keep as is) ---
 export const useGetUserPromoCodes = () => {
   return useQuery({
@@ -443,7 +440,9 @@ export const useGrantPromoCode = () => {
     onSuccess: (_, variables) => {
       toast.success("Промокод успешно создан");
       // Invalidate both user and global lists, or be more specific based on type
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes(variables.type === 'GLOBAL' ? 'global' : 'user') });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.admin.promoCodes(variables.type === "GLOBAL" ? "global" : "user"),
+      });
     },
   });
 };
@@ -452,14 +451,17 @@ export const useGrantPromoCode = () => {
 export const useEditPromocode = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (promoCodeId: string) => { // Adjust payload as needed
-      await api.put(`/admin/promocodes/${promoCodeId}`, { /* payload for edit */ });
+    mutationFn: async (promoCodeId: string) => {
+      // Adjust payload as needed
+      await api.put(`/admin/promocodes/${promoCodeId}`, {
+        /* payload for edit */
+      });
     },
     onSuccess: () => {
       toast.success("Промокод успешно изменен");
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes("user") });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.promoCodes("global") });
-    }
+    },
   });
 };
 

@@ -18,24 +18,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { banUserSchema } from "@/lib/schemas";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBanUser, useGetReports, useUpdateReportStatus } from "@/hooks/adminHooks";
+import { banUserSchema } from "@/lib/schemas";
 import { formatDate, getStatusColor } from "@/lib/utils";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-
-type Report = {
-  id: string;
-  reportingUser: { id: string; firstName: string };
-  reportedUser: { id: string; firstName: string };
-  reason: string;
-  status: "PENDING" | "RESOLVED" | "REJECTED";
-  createdAt: string;
-};
+import { Report } from "@/types";
 
 const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" }) => {
   const [searchTerm, setSearchTerm] = useState("");

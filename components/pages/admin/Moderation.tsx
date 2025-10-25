@@ -1,11 +1,11 @@
 "use client";
 
-import { z } from "zod";
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useDebounceValue } from "usehooks-ts";
-import { Plus, Search, Trash2 } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,9 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCreateRestrictedWord, useDeleteRestrictedWord, useGetRestrictedWords } from "@/hooks/adminHooks";
+import { wordSchema } from "@/lib/schemas";
 import { formatDate } from "@/lib/utils";
-
-const wordSchema = z.object({ word: z.string().min(2, "Слово должно содержать минимум 2 символа.") });
 
 export const Moderation = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);

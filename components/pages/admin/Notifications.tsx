@@ -26,8 +26,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateGlobalNotification, useGetNotifications } from "@/hooks/adminHooks";
-import { formatDate, getStatusColor } from "@/lib/utils";
 import { globalNotificationSchema } from "@/lib/schemas";
+import { formatDate, getStatusColor } from "@/lib/utils";
 
 export const Notifications = () => {
   const [searchTerm, setSearchTerm] = useState("");

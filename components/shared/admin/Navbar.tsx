@@ -1,7 +1,7 @@
 import { Moon, Sun, UserRound } from "lucide-react";
 
-import { ThemeSwitcher } from "../functions/ThemeSwitcher";
-import { SidebarTrigger } from "../ui/sidebar";
+import { ThemeSwitcher } from "@/components/functions/ThemeSwitcher";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export const Navbar = () => {
   return (
