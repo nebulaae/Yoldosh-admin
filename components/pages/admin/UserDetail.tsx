@@ -3,7 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Car, ChevronLeft, Phone, ShieldAlert, User, Wallet } from "lucide-react";
+import {
+  Ban,
+  Calendar,
+  Car,
+  ChevronLeft,
+  Info,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  ShieldAlert,
+  User,
+  Wallet,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -16,9 +29,22 @@ import {
   UserDetailsSkeleton,
 } from "@/components/shared/user/UserItems";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,7 +73,12 @@ export const UserDetail = ({ userId }: { userId: string }) => {
   };
 
   if (isLoading) return <UserDetailsSkeleton />;
-  if (isError || !user) return <div className="text-destructive">Не удалось загрузить данные пользователя.</div>;
+  if (isError || !user)
+    return (
+      <div className="text-destructive">
+        Не удалось загрузить данные пользователя.
+      </div>
+    );
 
   const totalSpent =
     user.bookingsAsPassenger?.reduce((acc: any, booking: any) => {
@@ -60,10 +91,15 @@ export const UserDetail = ({ userId }: { userId: string }) => {
   return (
     <div className="flex flex-col gap-6">
       <Toaster richColors />
-      <Link href="/admin/users-search" className="flex items-center gap-2 w-full text-emerald-500 hover:underline">
+      <Link
+        href="/admin/users-search"
+        className="flex items-center gap-2 w-full text-emerald-500 hover:underline"
+      >
         <ChevronLeft className="size-5" />
         <span>Назад к пользователям</span>
       </Link>
+
+      {/* HEADER */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-4">
           {user.avatar ? (
@@ -79,12 +115,19 @@ export const UserDetail = ({ userId }: { userId: string }) => {
           )}
           <div>
             <h1 className="title-text">
-              {user.firstName} {user.lastName}
+              {user.firstName} {user.lastName || ""}
             </h1>
             <p className="subtitle-text font-mono">ID: {user.id}</p>
-            <p className="text-sm text-muted-foreground">Регистрация: {formatDate(user.createdAt)}</p>
+            <p className="text-sm text-muted-foreground">
+              Регистрация: {formatDate(user.createdAt)}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Роль: {user.role || "—"}
+            </p>
           </div>
         </div>
+
+        {/* BAN BUTTON */}
         <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="destructive" disabled={user.isBanned}>
@@ -97,7 +140,10 @@ export const UserDetail = ({ userId }: { userId: string }) => {
               <DialogTitle>Заблокировать {user.firstName}</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onBanSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onBanSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="reason"
@@ -105,7 +151,10 @@ export const UserDetail = ({ userId }: { userId: string }) => {
                     <FormItem>
                       <FormLabel>Причина</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Причина блокировки..." {...field} />
+                        <Textarea
+                          placeholder="Причина блокировки..."
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -122,8 +171,18 @@ export const UserDetail = ({ userId }: { userId: string }) => {
                           type="number"
                           placeholder="Например, 7"
                           {...field}
-                          value={field.value === undefined || field.value === null ? "" : field.value}
-                          onChange={(e) => field.onChange(e.target.value === "" ? undefined : parseInt(e.target.value))}
+                          value={
+                            field.value === undefined || field.value === null
+                              ? ""
+                              : field.value
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === ""
+                                ? undefined
+                                : parseInt(e.target.value)
+                            )
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -139,8 +198,10 @@ export const UserDetail = ({ userId }: { userId: string }) => {
         </Dialog>
       </div>
 
+      {/* USER INFO */}
       <Card className="component shadow-none">
-        <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <CardTitle className="px-6">Общая информация</CardTitle>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <InfoItem
             icon={<ShieldAlert />}
             label="Статус"
@@ -149,46 +210,114 @@ export const UserDetail = ({ userId }: { userId: string }) => {
           />
           <InfoItem icon={<Phone />} label="Телефон" value={user.phoneNumber} />
           <InfoItem
-            icon={<Car />}
-            label="Всего поездок"
-            value={user.role === "Driver" ? user.drivenTrips?.length || 0 : user.bookingsAsPassenger?.length || 0}
+            icon={<Wallet />}
+            label="Баланс"
+            value={`${Number(user.wallet?.balance || 0).toLocaleString(
+              "ru-RU",
+              { style: "currency", currency: user.wallet?.currency || "UZS" }
+            )}`}
           />
-          <InfoItem icon={<Wallet />} label="Всего потрачено" value={`${totalSpent.toLocaleString("ru-RU")} UZS`} />
+          <InfoItem
+            icon={<Car />}
+            label="Поездок"
+            value={
+              user.role === "Driver"
+                ? user.drivenTrips?.length || 0
+                : user.bookingsAsPassenger?.length || 0
+            }
+          />
+          <InfoItem
+            icon={<Info />}
+            label="Рейтинг"
+            value={user.rating ? user.rating.toFixed(1) : "—"}
+          />
+          <InfoItem
+            icon={<Ban />}
+            label="Причина блокировки"
+            value={user.banReason || "—"}
+          />
+          <InfoItem
+            icon={<Calendar />}
+            label="Блокировка до"
+            value={
+              user.banExpiresAt ? formatDate(user.banExpiresAt) : "Не установлено"
+            }
+          />
+          <InfoItem
+            icon={<MessageSquare />}
+            label="Биография"
+            value={user.bio || "—"}
+          />
         </CardContent>
       </Card>
 
+      {/* NOTIFICATION SETTINGS */}
+      {user.notificationPreferences && (
+        <Card className="component shadow-none">
+          <CardTitle className="px-6">Настройки уведомлений</CardTitle>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {Object.entries(user.notificationPreferences).map(
+              ([key, value]) => (
+                <InfoItem
+                  key={key}
+                  icon={<Mail />}
+                  label={key}
+                  value={value ? "Вкл." : "Выкл."}
+                  valueClassName={value ? "text-green-500" : "text-muted-foreground"}
+                />
+              )
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* TABS */}
       <Tabs defaultValue="trips">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="trips">{user.role === "Driver" ? "Поездки водителя" : "Поездки пассажира"}</TabsTrigger>
+          <TabsTrigger value="trips">
+            {user.role === "Driver" ? "Поездки водителя" : "Поездки пассажира"}
+          </TabsTrigger>
           <TabsTrigger value="cars">Машины</TabsTrigger>
-          <TabsTrigger value="reports">Жалобы на пользователя</TabsTrigger>
+          <TabsTrigger value="reports">Жалобы</TabsTrigger>
         </TabsList>
+
         <TabsContent value="trips" className="space-y-4 mt-4">
-          {user.role === "Driver" &&
-            (user.drivenTrips?.length > 0 ? (
-              user.drivenTrips.map((trip: any) => <TripCard key={trip.id} trip={trip} />)
-            ) : (
-              <p className="text-muted-foreground p-4 text-center">У водителя нет поездок.</p>
-            ))}
-          {user.role === "Passenger" &&
-            (user.bookingsAsPassenger?.length > 0 ? (
-              user.bookingsAsPassenger.map((booking: any) => <BookingCard key={booking.id} booking={booking} />)
-            ) : (
-              <p className="text-muted-foreground p-4 text-center">У пассажира нет поездок.</p>
-            ))}
+          {user.role === "Driver"
+            ? user.drivenTrips?.length
+              ? user.drivenTrips.map((trip: any) => (
+                <TripCard key={trip.id} trip={trip} />
+              ))
+              : <p className="text-muted-foreground p-4 text-center">
+                У водителя нет поездок.
+              </p>
+            : user.bookingsAsPassenger?.length
+              ? user.bookingsAsPassenger.map((booking: any) => (
+                <BookingCard key={booking.id} booking={booking} />
+              ))
+              : <p className="text-muted-foreground p-4 text-center">
+                У пассажира нет поездок.
+              </p>}
         </TabsContent>
+
         <TabsContent value="cars" className="space-y-4 mt-4">
-          {user.cars?.length > 0 ? (
+          {user.cars?.length ? (
             user.cars.map((car: any) => <CarCard key={car.id} car={car} />)
           ) : (
-            <p className="text-muted-foreground p-4 text-center">У пользователя нет машин.</p>
+            <p className="text-muted-foreground p-4 text-center">
+              У пользователя нет машин.
+            </p>
           )}
         </TabsContent>
+
         <TabsContent value="reports" className="space-y-4 mt-4">
-          {user.receivedReports?.length > 0 ? (
-            user.receivedReports.map((report: any) => <ReportCard key={report.id} report={report} />)
+          {user.receivedReports?.length ? (
+            user.receivedReports.map((report: any) => (
+              <ReportCard key={report.id} report={report} />
+            ))
           ) : (
-            <p className="text-muted-foreground p-4 text-center">На пользователя нет жалоб.</p>
+            <p className="text-muted-foreground p-4 text-center">
+              У пользователя нет жалоб.
+            </p>
           )}
         </TabsContent>
       </Tabs>

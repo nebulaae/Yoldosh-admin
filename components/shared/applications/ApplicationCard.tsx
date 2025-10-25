@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Image as ImageIcon, Info, Send, ShieldX } from "lucide-react";
+import { Check, Copyright, File, Image as ImageIcon, Info, PaintbrushVertical, Phone, Send, UserRound, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -20,8 +21,9 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { rejectionSchema } from "@/lib/schemas";
-import { formatDate, getStatusColor } from "@/lib/utils";
+import { formatDate, formatDocUrl, getStatusColor } from "@/lib/utils";
 import { CarApplication } from "@/types";
+import Link from "next/link";
 
 // Component for displaying a single application card
 export const ApplicationCard = ({
@@ -44,161 +46,191 @@ export const ApplicationCard = ({
 
   const handleRejectSubmit = (values: z.infer<typeof rejectionSchema>) => {
     onReject(application.id, values.reason);
-    setIsRejectDialogOpen(false); // Close dialog on submit
+    setIsRejectDialogOpen(false);
     form.reset();
   };
 
-  const formatDocUrl = (url?: string) => {
-    if (!url) return "https://placehold.co/300x200/EEE/AAA?text=No+Image";
-    const baseUrl = "http://localhost:5000";
-    return `${baseUrl}${url}`;
-  };
-
   return (
-    <Card className="component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl shadow-md overflow-hidden">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <div>
-          <CardTitle className="text-sm font-semibold">
-            {application.modelDetails.make} {application.modelDetails.model} ({application.carYear})
-          </CardTitle>
-          <CardDescription className="font-mono text-xs">{application.license_plate}</CardDescription>
-        </div>
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(application.status)}`}
-        >
-          {application.status}
-        </span>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Driver Info */}
-        <div className="flex items-center gap-2 text-sm">
-          <img
-            src={
-              application.driver.avatar ||
-              `https://placehold.co/40x40/000000/FFF?text=${application.driver.firstName[0]}`
-            }
-            alt="Driver Avatar"
-            className="w-6 h-6 rounded-full object-cover"
-          />
+    <Card className="component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl shadow-md overflow-hidden w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className="flex flex-row items-center justify-start space-y-0 pb-2 gap-4">
           <div>
-            <p className="font-medium">
-              {application.driver.firstName} {application.driver.lastName}
-            </p>
-            <p className="text-xs text-muted-foreground">{application.driver.phoneNumber}</p>
+            {application.driver.avatar ? (
+              <Image
+                src={application.driver.avatar}
+                alt={`${application.driver.firstName} ${application.driver.lastName}`}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center">
+                <UserRound className="w-6 h-6 text-white" />
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col items-start justify-center">
+            <h1 className="font-bold text-lg md:text-xl">{application.driver.firstName} {application.driver.lastName}</h1>
+            <time className="text-xs text-muted-foreground">{formatDate(application.createdAt)}</time>
+          </div>
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(application.status)}`}
+          >
+            {application.status}
+          </span>
+        </div>
+        <div>
+          {/* Actions only for PENDING status */}
+          {application.status === "PENDING" && (
+            <CardFooter className="flex justify-between items-center gap-2">
+              <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                <DialogTrigger asChild>
+                  <div className="w-full">
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      disabled={isUpdating}
+                    >
+                      <X />
+                    </Button>
+                  </div>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Отказ заявки</DialogTitle>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleRejectSubmit)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="reason"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Причина отказа</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Объясните почему заявка отказывается..."
+                                {...field}
+                                className="min-h-[80px]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button type="button" variant="ghost">
+                            Отмена
+                          </Button>
+                        </DialogClose>
+                        <Button type="submit" variant="destructive" disabled={form.formState.isSubmitting}>
+                          <Send className="mr-1 h-4 w-4" /> Отправить отказ
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+
+              <div className="w-full">
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="btn-primary shadow-glow"
+                  onClick={() => onApprove(application.id)}
+                  disabled={isUpdating}
+                >
+                  <Check />
+                </Button>
+              </div>
+            </CardFooter>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="grid-2">
+        <div className="flex flex-col items-start space-y-4">
+          {/* Driver Info */}
+          <div className="flex items-center justify-start gap-2">
+            <Phone className="size-4 text-muted-foreground" />
+            <span className="text-sm">{application.driver.phoneNumber.replace(/^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")}</span>
+          </div>
+
+          {/* Tech Passport */}
+          <div className="flex items-center justify-start gap-2">
+            <File className="size-4 text-muted-foreground" />
+            <Link href={application.tech_passport} className="link-text text-sm">Тех пасспорт</Link>
+          </div>
+
+          {/* Licence plate */}
+          <div className="flex items-center justify-start gap-2">
+            <span className="text-sm text-muted-foreground">Номерной знак:</span>
+            <span className="text-sm">{application.license_plate || "N/A"}</span>
+          </div>
+
+          {/* Documents */}
+          <div className="flex gap-2 items-center justify-start flex-wrap mt-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <ImageIcon className="mr-1 h-3 w-3" /> Документ Спереди
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md p-0">
+                <DialogTitle className="sr-only">Передняя часть документа</DialogTitle>
+                <Image
+                  src={formatDocUrl(application.documentFront)}
+                  alt="Document Front"
+                  className="rounded-lg w-full max-h-[80vh] object-contain"
+                  width={2048}
+                  height={2048}
+                />
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <ImageIcon className="mr-1 h-3 w-3" /> Документ Сзади
+                </Button>
+              </DialogTrigger>
+              <DialogTitle className="sr-only">Задняя часть документа</DialogTitle>
+              <DialogContent className="max-w-md p-0">
+                <Image
+                  src={formatDocUrl(application.documentBack)}
+                  alt="Document Back"
+                  className="rounded-lg w-full max-h-[80vh] object-contain"
+                  width={2048}
+                  height={2048}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
-        {/* Car Details */}
-        <div className="text-xs text-muted-foreground space-y-1">
-          <p>Color: {application.color || "N/A"}</p>
-          <p>Tech Passport: {application.tech_passport}</p>
-          <time className="text-sm text-muted-foreground">{formatDate(application.createdAt)}</time>
-        </div>
-
-        {/* Documents */}
-        <div className="flex gap-2 items-center justify-start flex-wrap">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                <ImageIcon className="mr-1 h-3 w-3" /> Front Doc
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md p-0">
-              <img
-                src={formatDocUrl(application.documentFront)}
-                alt="Document Front"
-                className="rounded-lg w-full max-h-[80vh] object-contain"
-              />
-            </DialogContent>
-          </Dialog>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs">
-                <ImageIcon className="mr-1 h-3 w-3" /> Back Doc
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md p-0">
-              <img
-                src={formatDocUrl(application.documentBack)}
-                alt="Document Back"
-                className="rounded-lg w-full max-h-[80vh] object-contain"
-              />
-            </DialogContent>
-          </Dialog>
+        <div className="flex flex-col items-start space-y-4">
+          {/* Color */}
+          <div className="flex items-center justify-start gap-2">
+            <PaintbrushVertical className="size-4 text-muted-foreground" />
+            <span className="text-sm">{application.color || "N/A"}</span>
+          </div>
+          {/* Year */}
+          <div className="flex items-center justify-start gap-2">
+            <span className="text-sm text-muted-foreground">Год:</span>
+            <span className="text-sm">{application.carYear || "N/A"}</span>
+          </div>
+          {/* Model */}
+          <div className="flex items-center justify-start gap-2">
+            <span className="text-sm text-muted-foreground">Модель:</span>
+            <span className="text-sm">{application.modelDetails.make || "N/A"} - {application.modelDetails.model || "N/A"}</span>
+          </div>
         </div>
 
         {/* Rejection Reason */}
         {application.status === "REJECTED" && application.rejectionReason && (
           <div className="text-xs text-red-600 dark:text-red-400 bg-red-100/50 dark:bg-red-900/20 p-2 rounded-md flex items-start gap-2">
             <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-            <span>Reason: {application.rejectionReason}</span>
+            <span>Причина: {application.rejectionReason}</span>
           </div>
         )}
       </CardContent>
-
-      {/* Actions only for PENDING status */}
-      {application.status === "PENDING" && (
-        <CardFooter className="flex justify-end gap-2">
-          <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-red-600 border-red-600 hover:bg-red-100/50 dark:hover:bg-red-900/30"
-                disabled={isUpdating}
-              >
-                <ShieldX className="mr-1 h-4 w-4" /> Reject
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Reject Application</DialogTitle>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleRejectSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="reason"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Reason for Rejection</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Explain why the application is being rejected..."
-                            {...field}
-                            className="min-h-[80px]"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="ghost">
-                        Cancel
-                      </Button>
-                    </DialogClose>
-                    <Button type="submit" variant="destructive" disabled={form.formState.isSubmitting}>
-                      <Send className="mr-1 h-4 w-4" /> Submit Rejection
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-green-600 border-green-600 hover:bg-green-100/50 dark:hover:bg-green-900/30"
-            onClick={() => onApprove(application.id)}
-            disabled={isUpdating}
-          >
-            <Check className="mr-1 h-4 w-4" /> Approve
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 };

@@ -147,15 +147,15 @@ export const Applications = () => {
           {["PENDING", "VERIFIED", "REJECTED"].map((statusValue) => (
             <TabsContent key={statusValue} value={statusValue} className="mt-0">
               {isLoading && !data ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col items-center justify-start w-full gap-4">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-64 w-full rounded-xl" />
+                    <Skeleton key={i} className="h-64 w-full rounded-xl skeleton" />
                   ))}
                 </div>
               ) : error ? (
                 <div className="text-center py-10 text-destructive">Ошибка загрузки заявок. Попробуйте перезайти</div>
               ) : allApplications.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="flex flex-col items-center justify-start w-full gap-4">
                   {allApplications.map((app) => (
                     <ApplicationCard
                       key={app.id}

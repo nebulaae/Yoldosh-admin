@@ -1,9 +1,16 @@
+import { baseUrl } from "@/lib/api";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+// Format document URL
+export const formatDocUrl = (url?: string) => {
+  if (!url) return "https://placehold.co/300x200/EEE/AAA?text=No+Image";
+  return `${baseUrl}${url}`;
+};
 
 // Utility function to format error messages
 export const formatErrorMessage = (error: any): string => {
