@@ -4,7 +4,8 @@ export type CarApplication = {
   license_plate: string;
   color?: string;
   carYear: number;
-  tech_passport: string;
+  tech_passport_front?: string,
+  tech_passport_back?: string,
   documentFront?: string;
   documentBack?: string;
   status: "PENDING" | "VERIFIED" | "REJECTED";
@@ -38,9 +39,17 @@ export type Report = {
 
 export type Trip = {
   id: string;
-  driver: { firstName: string; lastName: string; phoneNumber: string };
-  fromVillage: { nameRu: string };
-  toVillage: { nameRu: string };
+  driver: {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string
+  };
+  fromVillage: {
+    nameRu: string
+  };
+  toVillage: {
+    nameRu: string
+  };
   departure_ts: string;
 };
 

@@ -154,12 +154,6 @@ export const ApplicationCard = ({
             <span className="text-sm">{application.driver.phoneNumber.replace(/^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")}</span>
           </div>
 
-          {/* Tech Passport */}
-          <div className="flex items-center justify-start gap-2">
-            <File className="size-4 text-muted-foreground" />
-            <Link href={application.tech_passport} className="link-text text-sm">Тех пасспорт</Link>
-          </div>
-
           {/* Licence plate */}
           <div className="flex items-center justify-start gap-2">
             <span className="text-sm text-muted-foreground">Номерной знак:</span>
@@ -221,6 +215,43 @@ export const ApplicationCard = ({
             <span className="text-sm text-muted-foreground">Модель:</span>
             <span className="text-sm">{application.modelDetails.make || "N/A"} - {application.modelDetails.model || "N/A"}</span>
           </div>
+          {/* Tech Passport */}
+          <div className="flex gap-2 items-center justify-start flex-wrap mt-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <ImageIcon className="mr-1 h-3 w-3" />Тех пасспорт Спереди
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md p-0">
+                <DialogTitle className="sr-only">Тех пасспорт Спереди</DialogTitle>
+                <Image
+                  src={formatDocUrl(application.tech_passport_front)}
+                  alt="Document Front"
+                  className="rounded-lg w-full max-h-[80vh] object-contain"
+                  width={2048}
+                  height={2048}
+                />
+              </DialogContent>
+            </Dialog>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs">
+                  <ImageIcon className="mr-1 h-3 w-3" />Тех пасспорт Сзади
+                </Button>
+              </DialogTrigger>
+              <DialogTitle className="sr-only">Тех пасспорт Сзади</DialogTitle>
+              <DialogContent className="max-w-md p-0">
+                <Image
+                  src={formatDocUrl(application.tech_passport_back)}
+                  alt="Document Back"
+                  className="rounded-lg w-full max-h-[80vh] object-contain"
+                  width={2048}
+                  height={2048}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Rejection Reason */}
@@ -231,6 +262,6 @@ export const ApplicationCard = ({
           </div>
         )}
       </CardContent>
-    </Card>
+    </Card >
   );
 };

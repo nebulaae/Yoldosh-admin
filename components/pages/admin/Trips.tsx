@@ -1,5 +1,8 @@
 "use client";
 
+import z from "zod";
+import Link from "next/link";
+
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -7,7 +10,6 @@ import { Calendar as CalendarIcon, Filter, MapPin, Pencil, Search, Trash2 } from
 import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
-import z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -163,7 +165,7 @@ export const Trips = () => {
                   key={trip.id}
                 >
                   <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <span className="font-bold text-lg">#{trip.id.substring(0, 6)}</span>
+                    <Link href={`/admin/trips/${trip.id}`} className="font-bold text-lg link-text">#{trip.id.substring(0, 6)}</Link>
                     <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(trip.status)}`}>
                       {trip.status}
                     </span>
@@ -171,12 +173,12 @@ export const Trips = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-4">
                     <div className="flex flex-col space-y-4 text-sm">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-muted-foreground">Водитель:</span>
-                        <span className="font-semibold">
+                      <Link href={`/admin/users-search/${trip.driver.id}`} className="flex flex-col gap-1">
+                        <span className="text-muted-foreground link-text">Водитель:</span>
+                        <span className="font-semibold link-text">
                           {trip.driver.firstName} {trip.driver.lastName}
                         </span>
-                      </div>
+                      </Link>
                       <div className="flex flex-col gap-1">
                         <span className="text-muted-foreground">Номер:</span>
                         <span>{trip.driver.phoneNumber}</span>

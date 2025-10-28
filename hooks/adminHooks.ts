@@ -272,7 +272,7 @@ export const useGetTripDetails = (tripId: string) => {
   return useQuery({
     queryKey: queryKeys.admin.tripDetails(tripId),
     queryFn: async () => {
-      const { data } = await api.get(`/routes/${tripId}`); // Example endpoint
+      const { data } = await api.get(`/admin/trips/details/${tripId}`);
       return data.data;
     },
     enabled: !!tripId,
