@@ -65,7 +65,7 @@ export const AuthGuard = ({ children, requiredRole }: AuthGuardProps) => {
 
   if (isLoading || !user) {
     return (
-      <div className="flex bg-gray-50 min-h-screen">
+      <div className="flex component-2 min-h-screen">
         <Skeleton className="h-screen w-64 hidden md:block" />
         <div className="flex-1 p-8 space-y-6">
           <Skeleton className="h-10 w-1/3" />

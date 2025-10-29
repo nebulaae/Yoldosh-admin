@@ -1,11 +1,12 @@
 import Image from "next/image";
-
+import Link from "next/link";
 import { ImageIcon } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate, formatDocUrl, getStatusColor } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate, formatDocUrl, getStatusColor } from "@/lib/utils";
 
 export const InfoItem = ({
   icon,
@@ -39,21 +40,18 @@ export const InfoItem = ({
 export const TripCard = ({ trip }: { trip: any }) => (
   <Card className="component">
     <CardHeader>
-      <div className="flex justify-between items-center">
+      <Link href={`/admin/trips/${trip.id}`} className="flex justify-between items-center link-text">
         <CardTitle className="font-mono text-base">Поездка #{trip.id.substring(0, 6)}</CardTitle>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(trip.status)}`}>
           {trip.status}
         </span>
-      </div>
+      </Link>
       <p className="text-sm text-muted-foreground">{formatDate(trip.departure_ts)}</p>
     </CardHeader>
     <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <InfoItem label="Откуда" value={trip.fromVillage?.nameRu ?? "N/A"} />
       <InfoItem label="Куда" value={trip.toVillage?.nameRu ?? "N/A"} />
-      <InfoItem
-        label="Стоимость"
-        value={`${parseFloat(trip.price_per_person).toLocaleString("ru-RU")} UZS`}
-      />
+      <InfoItem label="Стоимость" value={`${parseFloat(trip.price_per_person).toLocaleString("ru-RU")} UZS`} />
     </CardContent>
   </Card>
 );
@@ -84,28 +82,17 @@ export const CarCard = ({ car }: { car: any }) => (
         <CardTitle className="text-base">
           {car.modelDetails?.make} {car.modelDetails?.model}
         </CardTitle>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(car.status)}`}>
-          {car.status}
-        </span>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(car.status)}`}>{car.status}</span>
       </div>
       <p className="text-sm text-muted-foreground font-mono">Номер машины: {car.license_plate}</p>
+      <p className="text-sm text-muted-foreground font-mono">Id машины: {car.id}</p>
     </CardHeader>
     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <InfoItem label="Цвет" value={car.color} />
       <InfoItem label="Год" value={car.carYear} />
       <InfoItem label="Причина отклонения" value={car.rejectionReason ?? "—"} />
-      <InfoItem
-        label="Техпаспорт"
-        value={
-          car.tech_passport ? (
-            <a href={car.tech_passport} className="link-text" target="_blank">
-              Открыть
-            </a>
-          ) : (
-            "—"
-          )
-        }
-      />
+      <InfoItem label="Создано" value={formatDate(car.createdAt)} />
+
       {/* Documents */}
       <div className="flex gap-2 items-center justify-start flex-wrap">
         <Dialog>
@@ -142,6 +129,43 @@ export const CarCard = ({ car }: { car: any }) => (
             />
           </DialogContent>
         </Dialog>
+        {/* Tech passport */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="text-xs">
+              <ImageIcon className="mr-1 h-3 w-3" />
+              Тех пасспорт Спереди
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md p-0">
+            <DialogTitle className="sr-only">Тех пасспорт Спереди</DialogTitle>
+            <Image
+              src={formatDocUrl(car.tech_passport_front)}
+              alt="Document Front"
+              className="rounded-lg w-full max-h-[80vh] object-contain"
+              width={2048}
+              height={2048}
+            />
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="text-xs">
+              <ImageIcon className="mr-1 h-3 w-3" />
+              Тех пасспорт Сзади
+            </Button>
+          </DialogTrigger>
+          <DialogTitle className="sr-only">Тех пасспорт Сзади</DialogTitle>
+          <DialogContent className="max-w-md p-0">
+            <Image
+              src={formatDocUrl(car.tech_passport_back)}
+              alt="Document Back"
+              className="rounded-lg w-full max-h-[80vh] object-contain"
+              width={2048}
+              height={2048}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </CardContent>
   </Card>
@@ -151,7 +175,9 @@ export const ReportCard = ({ report }: { report: any }) => (
   <Card className="component">
     <CardHeader>
       <div className="flex justify-between items-center">
-        <CardTitle className="font-mono text-base">Жалоба #{report.id.substring(0, 6)}</CardTitle>
+        <CardTitle className="font-mono text-base">
+          Жалоба <span className="text-muted-foreground">#{report.id}</span>
+        </CardTitle>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
           {report.status}
         </span>
@@ -162,7 +188,7 @@ export const ReportCard = ({ report }: { report: any }) => (
     </CardHeader>
     <CardContent className="grid gap-2">
       <InfoItem label="Причина" value={report.reason} />
-      <InfoItem label="Комментарий" value={report.comment ?? "—"} />
+      <InfoItem label="ID поездки" value={report.tripId ?? "—"} />
     </CardContent>
   </Card>
 );

@@ -1,15 +1,13 @@
 "use client";
-
-import z from "zod";
-import Link from "next/link";
-
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Filter, MapPin, Pencil, Search, Trash2 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { useDebounceValue, useIntersectionObserver } from "usehooks-ts";
+import z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -66,9 +64,10 @@ export const Trips = () => {
     form.reset({
       tripId: trip.id,
       departure_ts: trip.departure_ts ? new Date(trip.departure_ts).toISOString().slice(0, 16) : undefined,
+      seats_available: 4,
+      price_per_person: 50000,
     });
   };
-
   const onEditSubmit = (values: z.infer<typeof editTripSchema>) => {
     if (!selectedTrip) return;
     const submissionData = {
@@ -165,7 +164,9 @@ export const Trips = () => {
                   key={trip.id}
                 >
                   <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <Link href={`/admin/trips/${trip.id}`} className="font-bold text-lg link-text">#{trip.id.substring(0, 6)}</Link>
+                    <Link href={`/admin/trips/${trip.id}`} className="font-bold text-lg link-text">
+                      #{trip.id.substring(0, 6)}
+                    </Link>
                     <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(trip.status)}`}>
                       {trip.status}
                     </span>
@@ -239,7 +240,7 @@ export const Trips = () => {
           {selectedTrip && (
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Изменить поездку</DialogTitle>
+                <DialogTitle>Редактировать поездку</DialogTitle>
               </DialogHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
@@ -248,16 +249,45 @@ export const Trips = () => {
                     name="departure_ts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Время прибытия</FormLabel>
+                        <FormLabel>Дата и время отправления</FormLabel>
                         <FormControl>
-                          <Input type="Выберите дату" {...field} />
+                          <Input type="datetime-local" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="seats_available"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Свободные места</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="price_per_person"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Цена за место</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <Button type="submit" disabled={isEditing}>
-                    {isEditing ? "Сохраняется..." : "Сохранить"}
+                    {isEditing ? "Сохранение..." : "Сохранить"}
                   </Button>
                 </form>
               </Form>

@@ -1,9 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import React, { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Copyright, File, Image as ImageIcon, Info, PaintbrushVertical, Phone, Send, UserRound, X } from "lucide-react";
+import {
+  Check,
+  Copyright,
+  File,
+  Image as ImageIcon,
+  Info,
+  PaintbrushVertical,
+  Phone,
+  Send,
+  UserRound,
+  X,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -23,7 +35,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { rejectionSchema } from "@/lib/schemas";
 import { formatDate, formatDocUrl, getStatusColor } from "@/lib/utils";
 import { CarApplication } from "@/types";
-import Link from "next/link";
 
 // Component for displaying a single application card
 export const ApplicationCard = ({
@@ -53,7 +64,10 @@ export const ApplicationCard = ({
   return (
     <Card className="component border hover:border-emerald-500 dark:hover:border-emerald-600 transition rounded-xl shadow-md overflow-hidden w-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex flex-row items-center justify-start space-y-0 pb-2 gap-4">
+        <Link
+          href={`/admin/users-search/${application.driver.id}`}
+          className="flex flex-row items-center justify-start space-y-0 pb-2 gap-4"
+        >
           <div>
             {application.driver.avatar ? (
               <Image
@@ -68,7 +82,9 @@ export const ApplicationCard = ({
             )}
           </div>
           <div className="flex flex-col items-start justify-center">
-            <h1 className="font-bold text-lg md:text-xl">{application.driver.firstName} {application.driver.lastName}</h1>
+            <h1 className="font-bold text-lg md:text-xl">
+              {application.driver.firstName} {application.driver.lastName}
+            </h1>
             <time className="text-xs text-muted-foreground">{formatDate(application.createdAt)}</time>
           </div>
           <span
@@ -76,7 +92,7 @@ export const ApplicationCard = ({
           >
             {application.status}
           </span>
-        </div>
+        </Link>
         <div>
           {/* Actions only for PENDING status */}
           {application.status === "PENDING" && (
@@ -84,11 +100,7 @@ export const ApplicationCard = ({
               <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                 <DialogTrigger asChild>
                   <div className="w-full">
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      disabled={isUpdating}
-                    >
+                    <Button size="icon" variant="destructive" disabled={isUpdating}>
                       <X />
                     </Button>
                   </div>
@@ -151,7 +163,9 @@ export const ApplicationCard = ({
           {/* Driver Info */}
           <div className="flex items-center justify-start gap-2">
             <Phone className="size-4 text-muted-foreground" />
-            <span className="text-sm">{application.driver.phoneNumber.replace(/^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")}</span>
+            <span className="text-sm">
+              {application.driver.phoneNumber.replace(/^\+?(\d{3})(\d{2})(\d{3})(\d{2})(\d{2})$/, "+$1 $2 $3 $4 $5")}
+            </span>
           </div>
 
           {/* Licence plate */}
@@ -213,14 +227,17 @@ export const ApplicationCard = ({
           {/* Model */}
           <div className="flex items-center justify-start gap-2">
             <span className="text-sm text-muted-foreground">Модель:</span>
-            <span className="text-sm">{application.modelDetails.make || "N/A"} - {application.modelDetails.model || "N/A"}</span>
+            <span className="text-sm">
+              {application.modelDetails.make || "N/A"} - {application.modelDetails.model || "N/A"}
+            </span>
           </div>
           {/* Tech Passport */}
           <div className="flex gap-2 items-center justify-start flex-wrap mt-2">
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="text-xs">
-                  <ImageIcon className="mr-1 h-3 w-3" />Тех пасспорт Спереди
+                  <ImageIcon className="mr-1 h-3 w-3" />
+                  Тех пасспорт Спереди
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md p-0">
@@ -237,7 +254,8 @@ export const ApplicationCard = ({
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="text-xs">
-                  <ImageIcon className="mr-1 h-3 w-3" />Тех пасспорт Сзади
+                  <ImageIcon className="mr-1 h-3 w-3" />
+                  Тех пасспорт Сзади
                 </Button>
               </DialogTrigger>
               <DialogTitle className="sr-only">Тех пасспорт Сзади</DialogTitle>
@@ -262,6 +280,6 @@ export const ApplicationCard = ({
           </div>
         )}
       </CardContent>
-    </Card >
+    </Card>
   );
 };

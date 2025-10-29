@@ -1,8 +1,8 @@
-import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
 
-export const baseUrl = 'http://localhost:5000';
-export const baseUrlApi = 'http://localhost:5000/api/v1';
+export const baseUrl = "http://localhost:5000";
+export const baseUrlApi = "http://localhost:5000/api/v1";
 
 // A more Vercel-like toast for errors
 const showErrorToast = (message: string) => {

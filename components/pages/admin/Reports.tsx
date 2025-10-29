@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Filter, Search } from "lucide-react";
@@ -152,14 +153,20 @@ const ReportsTable = ({ status }: { status: "PENDING" | "RESOLVED" | "REJECTED" 
                     </div>
                     <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
                       <div className="flex flex-col space-y-4 text-sm">
-                        <div className="flex flex-col">
+                        <Link
+                          href={`/admin/users-search/${report.reportingUser.id}`}
+                          className="flex flex-col link-text"
+                        >
                           <span className="text-muted-foreground">От:</span>
                           <span className="font-semibold">{report.reportingUser?.firstName || "N/A"}</span>
-                        </div>
-                        <div className="flex flex-col">
+                        </Link>
+                        <Link
+                          href={`/admin/users-search/${report.reportedUser.id}`}
+                          className="flex flex-col link-text"
+                        >
                           <span className="text-muted-foreground">На:</span>
                           <span className="font-semibold">{report.reportedUser?.firstName || "N/A"}</span>
-                        </div>
+                        </Link>
                         <div className="flex flex-col">
                           <span className="text-muted-foreground truncate max-w-xs">Причина:</span>
                           <span className="font-semibold">{report.reason}</span>

@@ -1,9 +1,7 @@
-import { TripDetails } from '@/components/pages/admin/TripDetails';
+import { TripDetails } from "@/components/pages/admin/TripDetails";
 
 const Page = ({ params }: { params: { tripId: string } }) => {
-  return (
-    <TripDetails tripId={params.tripId} />
-  );
+  return <TripDetails tripId={params.tripId} />;
 };
 
 export default Page;
