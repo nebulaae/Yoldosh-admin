@@ -1,4 +1,4 @@
-import { AuthGuard } from "@/components/functions/AuthGuard";
+import { AuthGuard } from "@/components/pages/auth/AuthGuard";
 import { AdminSidebar } from "@/components/shared/admin/AdminSidebar";
 import { Navbar } from "@/components/shared/admin/Navbar";
 import { SidebarProvider } from "@/components/ui/sidebar";

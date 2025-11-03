@@ -1,8 +1,14 @@
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
-export const baseUrl = "http://localhost:5000";
-export const baseUrlApi = "http://localhost:5000/api/v1";
+// https://yoldosh-api.onrender.com
+// https://yoldosh-api.onrender.com/api/v1
+
+// http://localhost:5000
+// http://localhost:5000/api/v1
+
+export const baseUrl = "https://yoldosh-api.onrender.com";
+export const baseUrlApi = "https://yoldosh-api.onrender.com/api/v1";
 
 // A more Vercel-like toast for errors
 const showErrorToast = (message: string) => {
