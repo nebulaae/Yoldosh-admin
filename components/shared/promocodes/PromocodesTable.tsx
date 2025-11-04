@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Ticket, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -10,9 +9,11 @@ import { useDeletePromoCode, useGetGlobalPromoCodes, useGetUserPromoCodes } from
 import { formatDate, getStatusColor } from "@/lib/utils";
 
 export const PromoCodesTable = ({ type }: { type: "SINGLE_USER" | "GLOBAL" }) => {
-  const [promocodeProgress, setPromocodeProgress] = useState();
-  const { data: promoCodes, isLoading } = type === "SINGLE_USER" ? useGetUserPromoCodes() : useGetGlobalPromoCodes();
   const { mutate: deletePromoCode, isPending: isDeleting } = useDeletePromoCode();
+  const userPromos = useGetUserPromoCodes();
+  const globalPromos = useGetGlobalPromoCodes();
+  const promoCodes = type === "SINGLE_USER" ? userPromos.data : globalPromos.data;
+  const isLoading = type === "SINGLE_USER" ? userPromos.isLoading : globalPromos.isLoading;
 
   return (
     <div className="flex flex-col component border rounded-2xl mt-4 px-6 py-4">
