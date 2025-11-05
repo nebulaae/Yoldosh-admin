@@ -7,8 +7,14 @@ import { toast } from "sonner";
 // http://localhost:5000
 // http://localhost:5000/api/v1
 
-export const baseUrl = "https://yoldosh-api.onrender.com";
-export const baseUrlApi = "https://yoldosh-api.onrender.com/api/v1";
+// https://api.yoldosh.uz
+// https://api.yoldosh.uz/api/v1
+
+// https://yoldosh-api.onrender.com
+// https://yoldosh-api.onrender.com/api/v1
+
+export const baseUrl = "https://api.yoldosh.uz";
+export const baseUrlApi = "https://api.yoldosh.uz/api/v1";
 
 // A more Vercel-like toast for errors
 const showErrorToast = (message: string) => {
